@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Excavate by Unsurfaced™</title>
+<title>Excavate by Unsurfaced™ — Consumer & Market Intelligence</title>
+<meta name="description" content="Real-time consumer and market intelligence platform for brands, marketers, and agencies. Powered by open-source data and Perplexity Sonar Pro.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -15,6 +16,12 @@
   --glow:rgba(255,59,59,0.12);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+.nlb{background:none;border:none;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--t3);cursor:pointer;padding:6px 14px;transition:color .2s;position:relative;}
+.nlb:hover{color:var(--t2);}
+.nlb.active{color:var(--t1);}
+.nlb.active::after{content:'';position:absolute;bottom:-1px;left:14px;right:14px;height:2px;background:var(--red);}
+.page-section{display:none;}
+.page-section.active{display:block;}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 
@@ -335,11 +342,11 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
 <nav>
   <div class="nav-logo">EXCAVATE <span class="byline">by Unsurfaced™</span></div>
   <ul class="nav-links">
-    <li><a href="#" class="active">Explore</a></li>
-    <li><a href="#">Brands</a></li>
-    <li><a href="#">Audiences</a></li>
-    <li><a href="#">Reports</a></li>
-    <li><a href="#">Deploy</a></li>
+    <li><button class="nlb active" id="nav-explore" onclick="navTo('explore')">Explore</button></li>
+    <li><button class="nlb" id="nav-brands" onclick="navTo('brands')">Brands</button></li>
+    <li><button class="nlb" id="nav-audiences" onclick="navTo('audiences')">Audiences</button></li>
+    <li><button class="nlb" id="nav-reports" onclick="navTo('reports')">Reports</button></li>
+    <li><button class="nlb" id="nav-deploy" onclick="navTo('deploy')">Deploy</button></li>
   </ul>
   <div class="nav-right">
     <button class="deep-toggle-nav" id="nav-deep-toggle" onclick="navDeepToggle()">
@@ -584,6 +591,75 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
   <div class="modal-box"><button class="modal-close" onclick="closeModalDirect()">✕</button><div id="modal-content"></div></div>
 </div>
 <div class="toast" id="toast"></div>
+
+
+</div><!-- /sec-explore -->
+
+<!-- ══ BRANDS ══ -->
+<div id="sec-brands" class="page-section">
+  <div style="padding:60px 40px 40px;max-width:1400px;margin:0 auto;">
+    <p style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:18px;display:flex;align-items:center;gap:12px;">Brand Intelligence</p>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,56px);color:var(--t1);margin-bottom:10px;line-height:1.0;">Track. Measure. <em style="font-style:italic;color:var(--red)">Outmaneuver.</em></h1>
+    <p style="font-size:14px;color:var(--t2);max-width:480px;line-height:1.65;margin-bottom:28px;">Monitor brand health and consumer perception. Click any brand to excavate live intelligence.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1400px;margin:0 auto 28px;padding:0 40px;" id="brand-tracker-grid"></div>
+  <div style="padding:0 40px;max-width:1400px;margin:0 auto 12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:var(--red);transform:rotate(45deg);display:inline-block;"></span>Brand Intelligence Feed</span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--t3);cursor:pointer;" onclick="renderBrandFeed()">REFRESH ↺</span>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1400px;margin:0 auto;padding:0 40px 60px;" id="brand-feed-grid"></div>
+</div>
+
+<!-- ══ AUDIENCES ══ -->
+<div id="sec-audiences" class="page-section">
+  <div style="padding:60px 40px 40px;max-width:1400px;margin:0 auto;">
+    <p style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:18px;display:flex;align-items:center;gap:12px;">Audience Intelligence</p>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,56px);color:var(--t1);margin-bottom:10px;line-height:1.0;">Know your audience. <em style="font-style:italic;color:var(--red)">Own the moment.</em></h1>
+    <p style="font-size:14px;color:var(--t2);max-width:480px;line-height:1.65;margin-bottom:28px;">Deep demographic and psychographic profiles from open consumer research. Click any segment to excavate live intelligence.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1400px;margin:0 auto 24px;padding:0 40px;" id="aud-grid"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1400px;margin:0 auto;padding:0 40px 60px;" id="aud-detail"></div>
+</div>
+
+<!-- ══ REPORTS ══ -->
+<div id="sec-reports" class="page-section">
+  <div style="padding:60px 40px 32px;max-width:1400px;margin:0 auto;">
+    <p style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:18px;display:flex;align-items:center;gap:12px;">Research Reports</p>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,56px);color:var(--t1);margin-bottom:10px;line-height:1.0;">Intelligence you can <em style="font-style:italic;color:var(--red)">deploy.</em></h1>
+    <p style="font-size:14px;color:var(--t2);max-width:480px;line-height:1.65;margin-bottom:28px;">Generate custom reports from any query. Each report is unique, sourced from live open data, and ready to download.</p>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);padding:26px;margin:0 40px 22px;max-width:1320px;position:relative;">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));"></div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:5px;">Generate New Report</h2>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;">Enter any topic, brand, or question. Excavate pulls from 7 open-source APIs and builds a full structured report ready to download.</p>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <input type="text" id="rg-input" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;padding:14px 18px;outline:none;caret-color:var(--accent);" placeholder="e.g. Gen Z brand trust, luxury market 2025, creator economy ROI…" onkeydown="if(event.key===&quot;Enter&quot;)generateReport()"/>
+      <button onclick="generateReport()" style="background:var(--accent);border:none;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.1em;padding:14px 24px;cursor:pointer;white-space:nowrap;">GENERATE →</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;" id="rg-types"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:1400px;margin:0 auto;padding:0 40px 60px;" id="report-grid"></div>
+</div>
+
+<!-- ══ DEPLOY ══ -->
+<div id="sec-deploy" class="page-section">
+  <div style="padding:60px 40px 40px;max-width:1400px;margin:0 auto;">
+    <p style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:18px;display:flex;align-items:center;gap:12px;">Deploy Intelligence</p>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,56px);color:var(--t1);margin-bottom:10px;line-height:1.0;">From insight to <em style="font-style:italic;color:var(--red)">action.</em></h1>
+    <p style="font-size:14px;color:var(--t2);max-width:480px;line-height:1.65;margin-bottom:28px;">Package your research into production-ready deliverables. Download or deploy to clients and teams.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1400px;margin:0 auto;padding:0 40px;" id="dep-cards"></div>
+  <div style="max-width:1400px;margin:24px auto 60px;padding:0 40px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);display:flex;align-items:center;gap:10px;"><span style="width:8px;height:8px;background:var(--red);transform:rotate(45deg);display:inline-block;"></span>Deploy Queue</span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--t3);cursor:pointer;" onclick="renderDeployQueue()">REFRESH ↺</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);padding:20px;"><div id="dep-queue"></div></div>
+  </div>
+</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
