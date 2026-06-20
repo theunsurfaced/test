@@ -3680,37 +3680,361 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ════════════════════════════════════════════════════════════════
-//  AUTH — Login gate, profile creation, session management
+//  AUTH — Login gate, account creation, session management
+//  Features:
+//  • Remember me (localStorage) vs session-only (sessionStorage)
+//  • Pre-fills last-used email on sign-in form
+//  • Forgot password → reset code → set new password flow
+//  • All data stored client-side in localStorage
 // ════════════════════════════════════════════════════════════════
-const _AUTH_KEY='unsurfaced_user_v1',_ACCOUNTS_KEY='unsurfaced_accounts_v1';
-let _currentUser=null;
-function _authInit(){try{const s=localStorage.getItem(_AUTH_KEY);if(s){_currentUser=JSON.parse(s);_authShowApp();return;}}catch(e){}  _authShowGate();}
-function _authShowGate(){const g=document.getElementById('login-gate');if(g)g.classList.remove('hidden');document.body.style.overflow='hidden';}
-function _authShowApp(){const g=document.getElementById('login-gate');if(g)g.classList.add('hidden');document.body.style.overflow='';_renderNavUser();}
-function lgSwitch(tab){document.querySelectorAll('.lg-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.lg-panel').forEach(p=>p.classList.remove('active'));const te=document.getElementById('lg-tab-'+tab),pe=document.getElementById('lg-panel-'+tab);if(te)te.classList.add('active');if(pe)pe.classList.add('active');_lgClearError();}
-function _lgSetError(msg){const el=document.getElementById('lg-error');if(!el)return;el.textContent=msg;el.classList.add('show');}
-function _lgClearError(){const el=document.getElementById('lg-error');if(el)el.classList.remove('show');}
-function _lgSetLoading(id,on){const b=document.getElementById(id);if(!b)return;b.disabled=on;b.innerHTML=on?'<span class="lg-spinner"></span>PROCESSING…':(id==='lg-login-btn'?'SIGN IN →':'CREATE ACCOUNT →');}
-function lgLogin(){_lgClearError();const e=(document.getElementById('lg-email')?.value||'').trim(),p=(document.getElementById('lg-password')?.value||'');if(!e)return _lgSetError('Email required');if(!_lgValidEmail(e))return _lgSetError('Invalid email');if(!p)return _lgSetError('Password required');_lgSetLoading('lg-login-btn',true);setTimeout(()=>{try{const accs=JSON.parse(localStorage.getItem(_ACCOUNTS_KEY)||'[]'),acc=accs.find(a=>a.email.toLowerCase()===e.toLowerCase());if(!acc){_lgSetLoading('lg-login-btn',false);return _lgSetError('No account found. Create one.');}if(acc.password!==_lgHash(p)){_lgSetLoading('lg-login-btn',false);return _lgSetError('Incorrect password.');}_currentUser={email:acc.email,firstName:acc.firstName,lastName:acc.lastName,company:acc.company,role:acc.role};localStorage.setItem(_AUTH_KEY,JSON.stringify(_currentUser));_lgSetLoading('lg-login-btn',false);_authShowApp();showToast('Welcome back, '+acc.firstName+' ✓');}catch(err){_lgSetLoading('lg-login-btn',false);_lgSetError('Something went wrong.');}},700);}
-function lgSignup(){_lgClearError();const fn=(document.getElementById('lg-fname')?.value||'').trim(),ln=(document.getElementById('lg-lname')?.value||'').trim(),co=(document.getElementById('lg-company')?.value||'').trim(),ro=(document.getElementById('lg-role')?.value||'').trim(),em=(document.getElementById('lg-signup-email')?.value||'').trim(),pw=(document.getElementById('lg-signup-password')?.value||'');if(!fn)return _lgSetError('First name required');if(!ln)return _lgSetError('Last name required');if(!em||!_lgValidEmail(em))return _lgSetError('Valid work email required');if(!ro)return _lgSetError('Please select your role');if(!pw||pw.length<8)return _lgSetError('Password must be 8+ characters');_lgSetLoading('lg-signup-btn',true);setTimeout(()=>{try{const accs=JSON.parse(localStorage.getItem(_ACCOUNTS_KEY)||'[]');if(accs.find(a=>a.email.toLowerCase()===em.toLowerCase())){_lgSetLoading('lg-signup-btn',false);return _lgSetError('Account exists. Sign in above.');}accs.push({email:em,firstName:fn,lastName:ln,company:co,role:ro,password:_lgHash(pw),createdAt:new Date().toISOString()});localStorage.setItem(_ACCOUNTS_KEY,JSON.stringify(accs));_currentUser={email:em,firstName:fn,lastName:ln,company:co,role:ro};localStorage.setItem(_AUTH_KEY,JSON.stringify(_currentUser));_lgSetLoading('lg-signup-btn',false);_authShowApp();showToast('Welcome to Unsurfaced, '+fn+' ✓');}catch(err){_lgSetLoading('lg-signup-btn',false);_lgSetError('Something went wrong.');}},800);}
-function lgForgot(){const e=(document.getElementById('lg-email')?.value||'').trim();if(!e)return _lgSetError('Enter your email first');showToast('Reset instructions sent to '+e);}
-function lgSignOut(){localStorage.removeItem(_AUTH_KEY);_currentUser=null;window.location.reload();}
-function _lgValidEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
-function _lgHash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h.toString(36);}
-function toggleUserMenu(){document.getElementById('nav-user-menu')?.classList.toggle('open');}
-function _renderNavUser(){
-  if(!_currentUser)return;
-  const ini=((_currentUser.firstName||'?')[0]+(_currentUser.lastName||'?')[0]).toUpperCase();
-  const nr=document.querySelector('.nav-right');
-  if(!nr)return;
-  const sb=nr.querySelector('.btn-ghost');
-  if(!sb)return;
-  const fn=_currentUser.firstName, ln=_currentUser.lastName, em=_currentUser.email;
-  const co=(_currentUser.company||''), ro=(_currentUser.role?'· '+_currentUser.role:'');
-  const wrap=document.createElement('div');
-  wrap.id='nav-user-wrap';
-  wrap.style.position='relative';
-  wrap.innerHTML=`<div class="nav-user" onclick="toggleUserMenu()">
+
+const _AUTH_KEY      = 'unsurfaced_user_v1';
+const _ACCOUNTS_KEY  = 'unsurfaced_accounts_v1';
+const _LAST_EMAIL_KEY= 'unsurfaced_last_email';
+const _RESET_KEY     = 'unsurfaced_reset_v1';
+let _currentUser     = null;
+let _resetEmail      = '';  // tracks email during forgot-password flow
+
+// ── Init — check for existing session ────────────────────────────
+function _authInit() {
+  // Check localStorage first (remember me), then sessionStorage (session-only)
+  try {
+    const ls = localStorage.getItem(_AUTH_KEY);
+    if (ls) { _currentUser = JSON.parse(ls); _authShowApp(); return; }
+    const ss = sessionStorage.getItem(_AUTH_KEY);
+    if (ss) { _currentUser = JSON.parse(ss); _authShowApp(); return; }
+  } catch(e) {}
+  // Pre-fill last email if available
+  try {
+    const lastEmail = localStorage.getItem(_LAST_EMAIL_KEY);
+    if (lastEmail) {
+      const emailField = document.getElementById('lg-email');
+      if (emailField) emailField.value = lastEmail;
+    }
+  } catch(e) {}
+  _authShowGate();
+}
+
+function _authShowGate() {
+  const g = document.getElementById('login-gate');
+  if (g) g.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function _authShowApp() {
+  const g = document.getElementById('login-gate');
+  if (g) g.classList.add('hidden');
+  document.body.style.overflow = '';
+  _renderNavUser();
+}
+
+// ── Tab / panel switching ─────────────────────────────────────────
+function lgSwitch(tab) {
+  document.querySelectorAll('.lg-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.lg-panel').forEach(p => p.classList.remove('active'));
+  const te = document.getElementById('lg-tab-'   + tab);
+  const pe = document.getElementById('lg-panel-' + tab);
+  if (te) te.classList.add('active');
+  if (pe) pe.classList.add('active');
+  _lgClearError();
+}
+
+function lgShowForgot() {
+  // Switch to forgot panel (not a tab — just show the panel)
+  document.querySelectorAll('.lg-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.lg-panel').forEach(p => p.classList.remove('active'));
+  const pe = document.getElementById('lg-panel-forgot');
+  if (pe) pe.classList.add('active');
+  _lgClearError();
+  // Pre-fill email from sign-in field if available
+  const signInEmail = (document.getElementById('lg-email')?.value || '').trim();
+  const forgotEmail = document.getElementById('lg-forgot-email');
+  if (forgotEmail && signInEmail) forgotEmail.value = signInEmail;
+}
+
+// ── Error helpers ────────────────────────────────────────────────
+function _lgSetError(msg) {
+  const el = document.getElementById('lg-error');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function _lgClearError() {
+  const el = document.getElementById('lg-error');
+  if (el) el.classList.remove('show');
+}
+function _lgSetLoading(id, on) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.disabled = on;
+  const labels = {
+    'lg-login-btn':  ['SIGN IN →',          'SIGNING IN…'],
+    'lg-signup-btn': ['CREATE ACCOUNT →',   'CREATING ACCOUNT…'],
+    'lg-forgot-btn': ['SEND RESET CODE →',  'SENDING…'],
+    'lg-reset-btn':  ['SET NEW PASSWORD →', 'UPDATING…'],
+  };
+  const [off, onLabel] = labels[id] || ['SUBMIT →', 'PROCESSING…'];
+  b.innerHTML = on ? `<span class="lg-spinner"></span>${onLabel}` : off;
+}
+
+// ── Sign In ───────────────────────────────────────────────────────
+function lgLogin() {
+  _lgClearError();
+  const email    = (document.getElementById('lg-email')?.value    || '').trim();
+  const password = (document.getElementById('lg-password')?.value || '');
+  const remember = document.getElementById('lg-remember')?.checked !== false; // default true
+
+  if (!email)               return _lgSetError('Email address is required');
+  if (!_lgValidEmail(email)) return _lgSetError('Please enter a valid email address');
+  if (!password)            return _lgSetError('Password is required');
+
+  _lgSetLoading('lg-login-btn', true);
+
+  setTimeout(() => {
+    try {
+      const accounts = JSON.parse(localStorage.getItem(_ACCOUNTS_KEY) || '[]');
+      const account  = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+
+      if (!account) {
+        _lgSetLoading('lg-login-btn', false);
+        return _lgSetError('No account found with this email. Create one above.');
+      }
+      if (account.password !== _lgHash(password)) {
+        _lgSetLoading('lg-login-btn', false);
+        return _lgSetError('Incorrect password. Please try again.');
+      }
+
+      // Build session object
+      _currentUser = {
+        email:     account.email,
+        firstName: account.firstName,
+        lastName:  account.lastName,
+        company:   account.company,
+        role:      account.role,
+        signedInAt: new Date().toISOString(),
+      };
+
+      // Store in localStorage (remember me) or sessionStorage (this session only)
+      const store = remember ? localStorage : sessionStorage;
+      store.setItem(_AUTH_KEY, JSON.stringify(_currentUser));
+
+      // Always remember the email for pre-fill convenience
+      localStorage.setItem(_LAST_EMAIL_KEY, account.email);
+
+      _lgSetLoading('lg-login-btn', false);
+      _authShowApp();
+      showToast('Welcome back, ' + account.firstName + ' ✓');
+    } catch(err) {
+      _lgSetLoading('lg-login-btn', false);
+      _lgSetError('Something went wrong. Please try again.');
+    }
+  }, 700);
+}
+
+// ── Sign Up ───────────────────────────────────────────────────────
+function lgSignup() {
+  _lgClearError();
+  const firstName = (document.getElementById('lg-fname')?.value          || '').trim();
+  const lastName  = (document.getElementById('lg-lname')?.value          || '').trim();
+  const company   = (document.getElementById('lg-company')?.value        || '').trim();
+  const role      = (document.getElementById('lg-role')?.value           || '').trim();
+  const email     = (document.getElementById('lg-signup-email')?.value   || '').trim();
+  const password  = (document.getElementById('lg-signup-password')?.value || '');
+
+  if (!firstName)               return _lgSetError('First name is required');
+  if (!lastName)                return _lgSetError('Last name is required');
+  if (!email)                   return _lgSetError('Work email is required');
+  if (!_lgValidEmail(email))    return _lgSetError('Please enter a valid email address');
+  if (!role)                    return _lgSetError('Please select your role');
+  if (!password || password.length < 8) return _lgSetError('Password must be at least 8 characters');
+
+  _lgSetLoading('lg-signup-btn', true);
+
+  setTimeout(() => {
+    try {
+      const accounts = JSON.parse(localStorage.getItem(_ACCOUNTS_KEY) || '[]');
+      if (accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
+        _lgSetLoading('lg-signup-btn', false);
+        return _lgSetError('An account with this email already exists. Sign in above.');
+      }
+
+      const newAccount = {
+        email, firstName, lastName, company, role,
+        password:  _lgHash(password),
+        createdAt: new Date().toISOString(),
+      };
+      accounts.push(newAccount);
+      localStorage.setItem(_ACCOUNTS_KEY, JSON.stringify(accounts));
+      localStorage.setItem(_LAST_EMAIL_KEY, email);
+
+      _currentUser = { email, firstName, lastName, company, role, signedInAt: new Date().toISOString() };
+      localStorage.setItem(_AUTH_KEY, JSON.stringify(_currentUser));
+
+      _lgSetLoading('lg-signup-btn', false);
+      _authShowApp();
+      showToast('Welcome to Unsurfaced, ' + firstName + ' ✓');
+    } catch(err) {
+      _lgSetLoading('lg-signup-btn', false);
+      _lgSetError('Something went wrong. Please try again.');
+    }
+  }, 800);
+}
+
+// ── Forgot Password — Step 1: send reset code ────────────────────
+function lgSendReset() {
+  _lgClearError();
+  const email = (document.getElementById('lg-forgot-email')?.value || '').trim();
+  if (!email)               return _lgSetError('Email address is required');
+  if (!_lgValidEmail(email)) return _lgSetError('Please enter a valid email address');
+
+  _lgSetLoading('lg-forgot-btn', true);
+
+  setTimeout(() => {
+    try {
+      const accounts = JSON.parse(localStorage.getItem(_ACCOUNTS_KEY) || '[]');
+      const account  = accounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+
+      if (!account) {
+        _lgSetLoading('lg-forgot-btn', false);
+        return _lgSetError('No account found with this email address.');
+      }
+
+      // Generate a 6-digit reset code and store it with expiry (15 min)
+      const code    = String(Math.floor(100000 + Math.random() * 900000));
+      const expiry  = Date.now() + 15 * 60 * 1000; // 15 minutes
+      const resetData = { email: account.email, code, expiry };
+      localStorage.setItem(_RESET_KEY, JSON.stringify(resetData));
+      _resetEmail = account.email;
+
+      _lgSetLoading('lg-forgot-btn', false);
+
+      // Show the reset code panel
+      document.querySelectorAll('.lg-panel').forEach(p => p.classList.remove('active'));
+      const resetPanel = document.getElementById('lg-panel-reset');
+      if (resetPanel) resetPanel.classList.add('active');
+
+      // Show the code on screen (in production this would be emailed)
+      const codeDisplay = document.getElementById('lg-reset-code-display');
+      const resetMsg    = document.getElementById('lg-reset-msg');
+      if (codeDisplay) { codeDisplay.textContent = code; codeDisplay.style.display = 'block'; }
+      if (resetMsg) resetMsg.textContent =
+        'A reset code has been generated for ' + account.email +
+        '. In production this would arrive by email. Enter it below along with your new password.';
+
+      // Pre-fill the code field for convenience (demo UX)
+      const codeField = document.getElementById('lg-reset-code');
+      if (codeField) codeField.value = code;
+
+      _lgClearError();
+    } catch(err) {
+      _lgSetLoading('lg-forgot-btn', false);
+      _lgSetError('Something went wrong. Please try again.');
+    }
+  }, 700);
+}
+
+// ── Forgot Password — Step 2: verify code + set new password ─────
+function lgResetPassword() {
+  _lgClearError();
+  const code     = (document.getElementById('lg-reset-code')?.value     || '').trim();
+  const newPw    = (document.getElementById('lg-new-password')?.value    || '');
+  const confirmPw= (document.getElementById('lg-confirm-password')?.value || '');
+
+  if (!code)                return _lgSetError('Please enter the reset code');
+  if (!newPw)               return _lgSetError('New password is required');
+  if (newPw.length < 8)     return _lgSetError('Password must be at least 8 characters');
+  if (newPw !== confirmPw)  return _lgSetError('Passwords do not match');
+
+  _lgSetLoading('lg-reset-btn', true);
+
+  setTimeout(() => {
+    try {
+      const resetData = JSON.parse(localStorage.getItem(_RESET_KEY) || 'null');
+
+      if (!resetData) {
+        _lgSetLoading('lg-reset-btn', false);
+        return _lgSetError('No active reset request found. Please start over.');
+      }
+      if (Date.now() > resetData.expiry) {
+        localStorage.removeItem(_RESET_KEY);
+        _lgSetLoading('lg-reset-btn', false);
+        return _lgSetError('Reset code has expired (15 min limit). Please request a new one.');
+      }
+      if (code !== resetData.code) {
+        _lgSetLoading('lg-reset-btn', false);
+        return _lgSetError('Incorrect reset code. Please check and try again.');
+      }
+
+      // Update password
+      const accounts = JSON.parse(localStorage.getItem(_ACCOUNTS_KEY) || '[]');
+      const idx      = accounts.findIndex(a => a.email.toLowerCase() === resetData.email.toLowerCase());
+      if (idx === -1) {
+        _lgSetLoading('lg-reset-btn', false);
+        return _lgSetError('Account not found. Please contact support.');
+      }
+      accounts[idx].password = _lgHash(newPw);
+      localStorage.setItem(_ACCOUNTS_KEY, JSON.stringify(accounts));
+      localStorage.removeItem(_RESET_KEY);
+
+      _lgSetLoading('lg-reset-btn', false);
+
+      // Auto sign-in with new password
+      _currentUser = {
+        email:     accounts[idx].email,
+        firstName: accounts[idx].firstName,
+        lastName:  accounts[idx].lastName,
+        company:   accounts[idx].company,
+        role:      accounts[idx].role,
+        signedInAt: new Date().toISOString(),
+      };
+      localStorage.setItem(_AUTH_KEY, JSON.stringify(_currentUser));
+      localStorage.setItem(_LAST_EMAIL_KEY, _currentUser.email);
+
+      _authShowApp();
+      showToast('Password updated. Welcome back, ' + accounts[idx].firstName + ' ✓');
+    } catch(err) {
+      _lgSetLoading('lg-reset-btn', false);
+      _lgSetError('Something went wrong. Please try again.');
+    }
+  }, 800);
+}
+
+// ── Sign Out ──────────────────────────────────────────────────────
+function lgSignOut() {
+  localStorage.removeItem(_AUTH_KEY);
+  sessionStorage.removeItem(_AUTH_KEY);
+  _currentUser = null;
+  window.location.reload();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function lgForgot() { lgShowForgot(); } // legacy alias
+
+function _lgValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function _lgHash(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+  return h.toString(36);
+}
+
+// ── Nav user avatar ───────────────────────────────────────────────
+function toggleUserMenu() {
+  document.getElementById('nav-user-menu')?.classList.toggle('open');
+}
+
+function _renderNavUser() {
+  if (!_currentUser) return;
+  const ini = ((_currentUser.firstName||'?')[0] + (_currentUser.lastName||'?')[0]).toUpperCase();
+  const nr  = document.querySelector('.nav-right');
+  if (!nr) return;
+  const sb = nr.querySelector('.btn-ghost');
+  if (!sb) return;
+  const fn = _currentUser.firstName, ln = _currentUser.lastName;
+  const em = _currentUser.email, co = _currentUser.company || '', ro = _currentUser.role || '';
+  const wrap = document.createElement('div');
+  wrap.id = 'nav-user-wrap';
+  wrap.style.position = 'relative';
+  wrap.innerHTML = `<div class="nav-user" onclick="toggleUserMenu()">
     <div class="nav-user-avatar">${ini}</div>
     <span class="nav-user-name">${fn}</span>
   </div>
@@ -3718,19 +4042,32 @@ function _renderNavUser(){
     <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
       <div style="font-family:var(--mono,monospace);font-size:10px;color:var(--text)">${fn} ${ln}</div>
       <div style="font-family:var(--mono,monospace);font-size:9px;color:var(--text3);margin-top:2px">${em}</div>
-      <div style="font-family:var(--mono,monospace);font-size:9px;color:var(--text3);margin-top:1px">${co} ${ro}</div>
+      <div style="font-family:var(--mono,monospace);font-size:9px;color:var(--text3);margin-top:1px">${co}${ro ? ' · ' + ro : ''}</div>
     </div>
-    <button class="nav-user-menu-item" onclick="showToast('Profile coming soon')">Profile Settings</button>
+    <button class="nav-user-menu-item" onclick="showToast('Profile settings coming soon')">Profile Settings</button>
     <button class="nav-user-menu-item" onclick="exportToPDF()">Download Report</button>
     <button class="nav-user-menu-item danger" onclick="lgSignOut()">Sign Out</button>
   </div>`;
   sb.replaceWith(wrap);
-  document.addEventListener('click',function(e){
-    const w=document.getElementById('nav-user-wrap'),m=document.getElementById('nav-user-menu');
-    if(w&&m&&!w.contains(e.target))m.classList.remove('open');
+  document.addEventListener('click', function(e) {
+    const w = document.getElementById('nav-user-wrap');
+    const m = document.getElementById('nav-user-menu');
+    if (w && m && !w.contains(e.target)) m.classList.remove('open');
   });
 }
-document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;const g=document.getElementById('login-gate');if(!g||g.classList.contains('hidden'))return;const a=document.querySelector('.lg-panel.active');if(!a)return;if(a.id==='lg-panel-login')lgLogin();else lgSignup();});
+
+// ── Enter key on auth panels ──────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  const gate = document.getElementById('login-gate');
+  if (!gate || gate.classList.contains('hidden')) return;
+  const active = document.querySelector('.lg-panel.active');
+  if (!active) return;
+  if (active.id === 'lg-panel-login')  lgLogin();
+  else if (active.id === 'lg-panel-signup') lgSignup();
+  else if (active.id === 'lg-panel-forgot') lgSendReset();
+  else if (active.id === 'lg-panel-reset')  lgResetPassword();
+});
 
 </script>
 
@@ -3765,11 +4102,16 @@ document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;const 
           <label class="lg-label" for="lg-password">Password</label>
           <input class="lg-input" id="lg-password" type="password" placeholder="••••••••" autocomplete="current-password"/>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.08em;">
+            <input type="checkbox" id="lg-remember" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;" checked>
+            Remember me
+          </label>
+          <a href="#" onclick="lgShowForgot();return false" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);text-decoration:none;letter-spacing:.08em;transition:color .18s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">Forgot password?</a>
+        </div>
         <button class="lg-submit" id="lg-login-btn" onclick="lgLogin()">SIGN IN →</button>
         <div class="lg-fine-print">
           <a href="#" onclick="lgSwitch('signup');return false">Create a free account</a>
-          &nbsp;·&nbsp;
-          <a href="#" onclick="lgForgot();return false">Forgot password?</a>
         </div>
       </div>
 
@@ -3818,6 +4160,50 @@ document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;const 
           <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
         </div>
       </div>
+
+      <!-- FORGOT PASSWORD panel -->
+      <div class="lg-panel" id="lg-panel-forgot">
+        <div style="margin-bottom:20px">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--text2);margin-bottom:6px;">RESET YOUR PASSWORD</div>
+          <p style="font-size:13px;color:var(--text3);line-height:1.6;">Enter your account email and we will generate a reset code you can use to set a new password.</p>
+        </div>
+        <div class="lg-field">
+          <label class="lg-label" for="lg-forgot-email">Account Email</label>
+          <input class="lg-input" id="lg-forgot-email" type="email" placeholder="you@company.com" autocomplete="email"/>
+        </div>
+        <button class="lg-submit" id="lg-forgot-btn" onclick="lgSendReset()">SEND RESET CODE →</button>
+        <div class="lg-fine-print" style="margin-top:16px">
+          <a href="#" onclick="lgSwitch('login');return false">← Back to Sign In</a>
+        </div>
+      </div>
+
+      <!-- RESET CODE entry panel -->
+      <div class="lg-panel" id="lg-panel-reset">
+        <div style="margin-bottom:20px">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--accent);margin-bottom:6px;">CHECK YOUR EMAIL</div>
+          <p style="font-size:13px;color:var(--text3);line-height:1.6;" id="lg-reset-msg">A 6-digit reset code has been generated. In production this would be emailed — for now it is shown below.</p>
+          <div id="lg-reset-code-display" style="display:none;margin-top:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);font-family:'Space Mono',monospace;font-size:18px;letter-spacing:.3em;color:var(--accent);text-align:center;"></div>
+        </div>
+        <div class="lg-field">
+          <label class="lg-label" for="lg-reset-code">Reset Code</label>
+          <input class="lg-input" id="lg-reset-code" type="text" placeholder="6-digit code" maxlength="6" style="letter-spacing:.2em;font-size:18px;" autocomplete="one-time-code"/>
+        </div>
+        <div class="lg-field">
+          <label class="lg-label" for="lg-new-password">New Password</label>
+          <input class="lg-input" id="lg-new-password" type="password" placeholder="Min. 8 characters" autocomplete="new-password"/>
+        </div>
+        <div class="lg-field">
+          <label class="lg-label" for="lg-confirm-password">Confirm Password</label>
+          <input class="lg-input" id="lg-confirm-password" type="password" placeholder="Re-enter password" autocomplete="new-password"/>
+        </div>
+        <button class="lg-submit" id="lg-reset-btn" onclick="lgResetPassword()">SET NEW PASSWORD →</button>
+        <div class="lg-fine-print" style="margin-top:16px">
+          <a href="#" onclick="lgShowForgot();return false">← Resend code</a>
+          &nbsp;·&nbsp;
+          <a href="#" onclick="lgSwitch('login');return false">Back to Sign In</a>
+        </div>
+      </div>
+
     </div><!-- /lg-card -->
 
     <div class="lg-fine-print" style="margin-top:16px;font-size:10px">
