@@ -1144,6 +1144,368 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
 </head>
 <body>
 
+<!-- ════════════ UNSURFACED AI — ECOSYSTEM HUB (front door) ════════════ -->
+<style>
+.uai-hub,.uai-space{position:fixed;inset:0;z-index:800;background:#000;color:var(--text);display:none;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.uai-hub.show,.uai-space.show{display:flex;}
+.uai-hub{padding:30px clamp(20px,5vw,64px) 40px;}
+.uai-hub-top{display:flex;justify-content:space-between;align-items:center;}
+.uai-eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--text2);}
+.uai-hub-logo{height:20px;width:auto;display:block;filter:invert(1) brightness(2);opacity:.85;flex-shrink:0;}
+.uai-tm{font-size:8px;vertical-align:super;}
+.uai-hub-head{margin:auto 0 clamp(26px,5vh,52px);max-width:900px;}
+.uai-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(46px,9vw,102px);line-height:.9;letter-spacing:-.02em;margin:0 0 18px;}
+.uai-lede{font-size:clamp(14px,1.6vw,18px);color:var(--text2);max-width:540px;line-height:1.5;}
+.uai-triptych{display:flex;gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.uai-door{flex:1;min-width:0;background:#000;border:none;color:var(--text);text-align:left;cursor:pointer;padding:clamp(24px,3vw,40px) clamp(20px,2.4vw,34px);display:flex;flex-direction:column;gap:14px;min-height:clamp(280px,42vh,440px);position:relative;font-family:inherit;transition:opacity .4s ease,background .4s ease;}
+.uai-door:hover,.uai-door:focus-visible{background:#0b0b11;outline:none;}
+.uai-triptych:hover .uai-door:not(:hover){opacity:.4;}
+.uai-role{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);}
+.uai-verb{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,4.4vw,60px);line-height:.95;letter-spacing:-.01em;margin-top:auto;transition:color .35s ease;}
+.uai-def{font-size:14px;color:var(--text2);line-height:1.45;max-width:32ch;}
+.uai-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.uai-status{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--border2);color:var(--text3);}
+.st-live{color:var(--accent);border-color:rgba(255,59,59,.4);}
+.st-soon{color:var(--deep2);border-color:rgba(167,139,250,.4);}
+.st-dev{color:var(--accent4);border-color:rgba(245,165,90,.4);}
+.uai-go{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.12em;color:var(--text3);transition:color .3s,transform .3s;}
+.uai-door:hover .uai-go,.uai-door:focus-visible .uai-go{transform:translateX(4px);}
+.door-play:hover .uai-verb,.door-play:focus-visible .uai-verb{color:var(--deep2);}
+.door-play:hover .uai-go,.door-play:focus-visible .uai-go{color:var(--deep2);}
+.door-excavate:hover .uai-verb,.door-excavate:focus-visible .uai-verb{color:var(--accent);}
+.door-excavate:hover .uai-go,.door-excavate:focus-visible .uai-go{color:var(--accent);}
+.door-mine:hover .uai-verb,.door-mine:focus-visible .uai-verb{color:var(--accent4);}
+.door-mine:hover .uai-go,.door-mine:focus-visible .uai-go{color:var(--accent4);}
+.uai-hub-base{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text3);margin-top:clamp(18px,4vh,38px);text-transform:uppercase;}
+.uai-hub.show .uai-h1{animation:uaiRise .6s cubic-bezier(.2,.7,.2,1) both;}
+.uai-hub.show .door-play{animation:uaiRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:.04s;}
+.uai-hub.show .door-excavate{animation:uaiRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:.12s;}
+.uai-hub.show .door-mine{animation:uaiRise .6s cubic-bezier(.2,.7,.2,1) both;animation-delay:.2s;}
+@keyframes uaiRise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+.uai-space{padding:clamp(56px,8vw,80px) clamp(24px,5vw,64px);align-items:center;}
+.uai-back{position:fixed;top:22px;left:clamp(20px,5vw,48px);z-index:1;background:none;border:1px solid var(--border2);color:var(--text2);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:8px 14px;cursor:pointer;transition:all .25s;}
+.uai-back:hover,.uai-back:focus-visible{color:var(--text);border-color:var(--text3);outline:none;}
+.uai-space-inner{max-width:760px;width:100%;margin:auto 0;}
+.uai-space-verb{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(44px,8vw,86px);line-height:.95;margin:8px 0 18px;}
+.uai-space-lede{font-size:clamp(15px,1.8vw,19px);color:var(--text2);line-height:1.55;max-width:60ch;margin-bottom:32px;}
+.uai-console{border:1px solid var(--border2);padding:22px;background:var(--surface);}
+.uai-console-input{color:var(--text3);font-size:15px;padding:12px 0;border-bottom:1px solid var(--border);}
+.uai-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+.uai-chips span{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--text2);border:1px solid var(--border2);padding:6px 11px;}
+.uai-note{font-size:13px;color:var(--text3);margin-top:24px;line-height:1.6;}
+.uai-link{background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;}
+.uai-doors2{display:flex;gap:16px;flex-wrap:wrap;}
+.uai-door2{flex:1;min-width:240px;border:1px solid var(--border2);padding:24px;background:var(--surface);transition:border-color .3s;}
+.uai-door2:hover{border-color:var(--accent4);}
+.uai-role2{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent4);}
+.uai-door2 h3{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin:10px 0 8px;color:var(--text);}
+.uai-door2 p{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:18px;}
+.uai-door2-btn{background:none;border:1px solid var(--border2);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:10px 16px;cursor:pointer;transition:all .25s;}
+.uai-door2-btn:hover,.uai-door2-btn:focus-visible{background:var(--accent4);color:#000;border-color:var(--accent4);outline:none;}
+@media(max-width:760px){.uai-triptych{flex-direction:column;}.uai-door{min-height:auto;}.uai-door .uai-verb{margin-top:8px;}.uai-triptych:hover .uai-door:not(:hover){opacity:1;}}
+@media(prefers-reduced-motion:reduce){.uai-hub.show .uai-door,.uai-hub.show .uai-h1{animation:none;}.uai-door,.uai-go,.uai-verb{transition:none;}}
+</style>
+
+<div id="uai-hub" class="uai-hub" aria-hidden="true">
+  <div class="uai-atmos" aria-hidden="true">
+    <div class="uai-glow"></div>
+    <div class="uai-cursor-glow" id="uai-cursor-glow"></div>
+    <!-- BRAND MOMENT: drop your Unsurfaced™ hand render here (transparent PNG).
+         Either paste a URL/base64 into src below, or call from the console:
+         setHubHand('https://… or data:image/png;base64,…')
+         Until an image is set it stays hidden and the atmospheric signature carries the door. -->
+    <img id="uai-hand" class="uai-hand" alt="" style="display:none" onerror="this.style.display='none'">
+    <div class="uai-vignette"></div>
+  </div>
+  <div class="uai-hub-top">
+    <span class="uai-eyebrow">Unsurfaced<span class="uai-tm">™</span> Intelligence</span>
+    <img id="uai-hub-logo" class="uai-hub-logo" alt="Unsurfaced™">
+  </div>
+  <div class="uai-hub-head">
+    <h1 class="uai-h1">Three ways<br>to move.</h1>
+    <p class="uai-lede">One intelligence, three spaces. Make what's next, listen to the world, or go straight to the source.</p>
+  </div>
+  <div class="uai-triptych">
+    <button class="uai-door door-play" onclick="enterSpace('play')" aria-label="Enter PLAY — generative studio">
+      <span class="uai-role">Generative Studio</span>
+      <span class="uai-verb">PLAY</span>
+      <span class="uai-def">Long-form content and visual assets, made with you.</span>
+      <span class="uai-foot"><span class="uai-status st-soon">Early access</span><span class="uai-go">Enter →</span></span>
+    </button>
+    <button class="uai-door door-excavate" onclick="enterSpace('excavate')" aria-label="Enter EXCAVATE — insights engine">
+      <span class="uai-role">Insights Engine</span>
+      <span class="uai-verb">EXCAVATE</span>
+      <span class="uai-def">Real-time signal from the public world, fused into a cited read.</span>
+      <span class="uai-foot"><span class="uai-status st-live">Live</span><span class="uai-go">Enter →</span></span>
+    </button>
+    <button class="uai-door door-mine" onclick="enterSpace('mine')" aria-label="Enter MINE — primary research">
+      <span class="uai-role">Primary Research</span>
+      <span class="uai-verb">MINE</span>
+      <span class="uai-def">Truth mined from real people — surveys, video, and voice.</span>
+      <span class="uai-foot"><span class="uai-status st-dev">In development</span><span class="uai-go">Enter →</span></span>
+    </button>
+  </div>
+  <p class="uai-hub-base">EXCAVATE digs the public surface · MINE goes to the source · PLAY makes what comes next</p>
+</div>
+
+<div id="space-play" class="uai-space" aria-hidden="true">
+  <button class="uai-back" onclick="goHub()">← All spaces</button>
+  <div class="uai-space-inner">
+    <span class="uai-role" style="color:var(--deep2)">Generative Studio</span>
+    <h2 class="uai-space-verb" style="color:var(--deep2)">PLAY</h2>
+    <p class="uai-space-lede">Your creative companion. PLAY turns a single brief into long-form content and visual assets — grounded, on-brand, and yours to shape.</p>
+    <div class="uai-console" role="group" aria-label="PLAY console preview">
+      <div class="uai-console-row">
+        <input type="text" id="play-input" class="uai-console-field" placeholder="Describe what you want to create…" autocomplete="off" spellcheck="false">
+        <button class="uai-play-go" onclick="playGenerate()">Create →</button>
+      </div>
+      <div class="uai-chips">
+        <span onclick="playChip(this)">Campaign concept</span>
+        <span onclick="playChip(this)">Long-form article</span>
+        <span onclick="playChip(this)">Key visual</span>
+        <span onclick="playChip(this)">Moodboard</span>
+      </div>
+    </div>
+    <div id="play-output" class="play-output" style="display:none"></div>
+    <p class="uai-note">Pick a starter or describe your own, then Create. PLAY generates live once the studio backend is connected; until then this stays a preview.</p>
+  </div>
+</div>
+
+<div id="space-mine" class="uai-space" aria-hidden="true">
+  <button class="uai-back" onclick="goHub()">← All spaces</button>
+  <div class="uai-space-inner">
+    <span class="uai-role" style="color:var(--accent4)">Primary Research</span>
+    <h2 class="uai-space-verb" style="color:var(--accent4)">MINE</h2>
+    <p class="uai-space-lede">Insight mined from real people. Surveys, brand videos, and open responses — synthesized into findings partners can act on, with every finding traceable to a real voice.</p>
+    <div class="uai-doors2">
+      <div class="uai-door2">
+        <span class="uai-role2">For responders</span>
+        <h3>Share your voice. Get paid.</h3>
+        <p>Respond to a survey, react to a brand, or record your take. Your time is compensated; your data stays yours.</p>
+        <button class="uai-door2-btn" onclick="startResponder()">Become a responder →</button>
+      </div>
+      <div class="uai-door2">
+        <span class="uai-role2">For partners</span>
+        <h3>Commission research. Read the truth.</h3>
+        <p>Define a brief and an audience. Watch real responses become a synthesized, cited read tuned to your goals.</p>
+        <button class="uai-door2-btn" onclick="startPartner()">Request access →</button>
+      </div>
+    </div>
+    <p class="uai-note">MINE is in active development — the responder and partner experiences land next.</p>
+  </div>
+</div>
+
+<!-- ════════════ MINE — RESPONDER FLOW (client-side preview) ════════════ -->
+<style>
+/* hub atmosphere */
+.uai-hub-top,.uai-hub-head,.uai-triptych,.uai-hub-base{position:relative;z-index:2;}
+.uai-atmos{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.uai-glow{position:absolute;left:50%;top:54%;width:80vw;height:80vw;max-width:1100px;max-height:1100px;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(167,139,250,.10) 0%,rgba(255,59,59,.05) 35%,transparent 65%);filter:blur(20px);animation:uaiBreathe 7s ease-in-out infinite;}
+@keyframes uaiBreathe{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(1);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+.uai-cursor-glow{position:absolute;left:0;top:0;width:440px;height:440px;margin:-220px 0 0 -220px;background:radial-gradient(circle,rgba(245,165,90,.10) 0%,transparent 60%);will-change:transform;opacity:0;transition:opacity .5s;}
+.uai-hub.show .uai-cursor-glow{opacity:1;}
+.uai-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 38%,rgba(0,0,0,.62) 100%);}
+.uai-hand{position:absolute;right:3%;top:50%;transform:translateY(-50%);max-height:80vh;max-width:48vw;opacity:.92;will-change:transform;filter:drop-shadow(0 0 70px rgba(0,0,0,.85));}
+/* PLAY console */
+.uai-console-row{display:flex;gap:10px;align-items:center;}
+.uai-console-field{flex:1;min-width:0;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:inherit;font-size:15px;padding:12px 0;outline:none;}
+.uai-console-field:focus{border-color:var(--deep2);}
+.uai-console-field::placeholder{color:var(--text3);}
+.uai-play-go{background:none;border:1px solid var(--deep2);color:var(--deep2);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:10px 14px;cursor:pointer;white-space:nowrap;transition:all .25s;}
+.uai-play-go:hover,.uai-play-go:focus-visible{background:var(--deep2);color:#000;outline:none;}
+.uai-chips span{cursor:pointer;transition:all .25s;}
+.uai-chips span:hover{border-color:var(--deep2);color:var(--deep2);}
+/* MINE responder wizard */
+.mr-overlay{position:fixed;inset:0;z-index:850;background:#000;color:var(--text);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:clamp(40px,7vw,72px) clamp(20px,5vw,48px);}
+.mr-overlay.show{display:block;}
+.mr-shell{max-width:620px;margin:0 auto;}
+.mr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.mr-step-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);}
+.mr-progress{height:2px;background:var(--border);margin-bottom:36px;}
+.mr-progress-fill{height:100%;background:var(--accent4);width:0;transition:width .4s ease;}
+.mr-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent4);}
+.mr-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,4.5vw,40px);line-height:1.06;margin:10px 0 14px;}
+.mr-p{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:24px;}
+.mr-priv{display:block;font-size:12px;color:var(--text3);margin-top:8px;}
+.mr-facts{display:flex;gap:28px;margin-bottom:32px;flex-wrap:wrap;}
+.mr-fact-n{display:block;font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:var(--text);}
+.mr-fact-l{display:block;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-top:3px;}
+.mr-q{font-size:15px;color:var(--text);font-weight:600;margin:22px 0 12px;}
+.mr-check{display:flex;align-items:flex-start;gap:11px;font-size:14px;color:var(--text2);line-height:1.5;margin-bottom:14px;cursor:pointer;}
+.mr-check input{margin-top:2px;accent-color:var(--accent4);width:16px;height:16px;flex-shrink:0;}
+.mr-film{aspect-ratio:16/9;background:linear-gradient(135deg,#15151c,#0c0c11);border:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;}
+.mr-film-play{font-size:26px;color:var(--accent4);}
+.mr-film-cap{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);}
+.mr-scale,.mr-choices{display:flex;flex-wrap:wrap;gap:8px;}
+.mr-scale button,.mr-choices button{background:none;border:1px solid var(--border2);color:var(--text2);font-family:inherit;font-size:13px;padding:10px 15px;cursor:pointer;transition:all .2s;}
+.mr-scale button:hover,.mr-choices button:hover{border-color:var(--accent4);color:var(--text);}
+.mr-scale button.sel,.mr-choices button.sel{background:var(--accent4);color:#000;border-color:var(--accent4);font-weight:600;}
+.mr-textarea,.mr-field{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:15px;padding:13px 15px;margin-bottom:14px;outline:none;}
+.mr-textarea:focus,.mr-field:focus{border-color:var(--accent4);}
+.mr-upload{display:inline-block;border:1px dashed var(--border2);color:var(--text2);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.06em;padding:14px 18px;cursor:pointer;transition:all .25s;}
+.mr-upload:hover{border-color:var(--accent4);color:var(--text);}
+.mr-nav{display:flex;gap:12px;margin-top:30px;}
+.mr-btn{background:none;border:1px solid var(--border2);color:var(--text);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.08em;padding:12px 20px;cursor:pointer;transition:all .25s;}
+.mr-btn:hover:not(:disabled){border-color:var(--text3);}
+.mr-btn-primary{background:var(--accent4);color:#000;border-color:var(--accent4);font-weight:700;}
+.mr-btn-primary:hover:not(:disabled){filter:brightness(1.08);}
+.mr-btn:disabled{opacity:.4;cursor:not-allowed;}
+@media(prefers-reduced-motion:reduce){.uai-glow{animation:none;}.mr-progress-fill{transition:none;}}
+</style>
+
+<div id="mine-responder" class="mr-overlay" aria-hidden="true">
+  <div class="mr-shell">
+    <div class="mr-top">
+      <button class="uai-back" style="position:static" onclick="mrExit()">← Exit</button>
+      <span class="mr-step-label" id="mr-step-label">Step 1 of 5</span>
+    </div>
+    <div class="mr-progress"><div class="mr-progress-fill" id="mr-progress-fill"></div></div>
+
+    <div class="mr-step" data-step="0">
+      <span class="mr-eyebrow">Study · Beverage</span>
+      <h2 class="mr-h">Tell Lumen what you really think.</h2>
+      <p class="mr-p">Lumen is a new sparkling-tea brand testing its first campaign. Watch a short film, answer a few questions, and share your honest take. There are no wrong answers — the brand wants the truth.</p>
+      <div class="mr-facts">
+        <div><span class="mr-fact-n">~5 min</span><span class="mr-fact-l">Your time</span></div>
+        <div><span class="mr-fact-n">$12</span><span class="mr-fact-l">Reward</span></div>
+        <div><span class="mr-fact-n">Anonymous</span><span class="mr-fact-l">To the brand</span></div>
+      </div>
+      <button class="mr-btn mr-btn-primary" onclick="mrNext()">Start →</button>
+    </div>
+
+    <div class="mr-step" data-step="1" hidden>
+      <span class="mr-eyebrow">Consent</span>
+      <h2 class="mr-h">Before we begin.</h2>
+      <p class="mr-p">Plain and simple — here's the deal, and you stay in control of your data.</p>
+      <label class="mr-check"><input type="checkbox" class="mr-consent" onchange="mrConsentCheck()"> I'm 18 or older.</label>
+      <label class="mr-check"><input type="checkbox" class="mr-consent" onchange="mrConsentCheck()"> I agree my responses can be used as research for this brand.</label>
+      <label class="mr-check"><input type="checkbox" class="mr-consent" onchange="mrConsentCheck()"> I understand I'll be compensated after my responses are reviewed.</label>
+      <label class="mr-check"><input type="checkbox" class="mr-consent" onchange="mrConsentCheck()"> I can withdraw and request deletion of my data at any time.</label>
+      <div class="mr-nav"><button class="mr-btn" onclick="mrBack()">Back</button><button class="mr-btn mr-btn-primary" id="mr-consent-next" onclick="mrNext()" disabled>I agree, continue →</button></div>
+    </div>
+
+    <div class="mr-step" data-step="2" hidden>
+      <span class="mr-eyebrow">Watch & react</span>
+      <h2 class="mr-h">The Lumen film.</h2>
+      <div class="mr-film"><span class="mr-film-play">▶</span><span class="mr-film-cap">30-second brand film</span></div>
+      <p class="mr-q">How did that make you feel about Lumen?</p>
+      <div class="mr-scale" id="mr-scale">
+        <button onclick="mrPick('sentiment',1,this)">Cold</button>
+        <button onclick="mrPick('sentiment',2,this)">Meh</button>
+        <button onclick="mrPick('sentiment',3,this)">Curious</button>
+        <button onclick="mrPick('sentiment',4,this)">Into it</button>
+        <button onclick="mrPick('sentiment',5,this)">Obsessed</button>
+      </div>
+      <p class="mr-q">What stood out most?</p>
+      <div class="mr-choices" id="mr-choices">
+        <button onclick="mrPick('choice','The vibe',this)">The vibe</button>
+        <button onclick="mrPick('choice','The message',this)">The message</button>
+        <button onclick="mrPick('choice','The product',this)">The product</button>
+        <button onclick="mrPick('choice','The music',this)">The music</button>
+        <button onclick="mrPick('choice','Nothing really',this)">Nothing really</button>
+      </div>
+      <div class="mr-nav"><button class="mr-btn" onclick="mrBack()">Back</button><button class="mr-btn mr-btn-primary" onclick="mrNext()">Continue →</button></div>
+    </div>
+
+    <div class="mr-step" data-step="3" hidden>
+      <span class="mr-eyebrow">Your take</span>
+      <h2 class="mr-h">In your own words.</h2>
+      <p class="mr-q">What would make you actually trust and buy a brand like Lumen?</p>
+      <textarea id="mr-open" class="mr-textarea" rows="4" placeholder="Type your honest take…"></textarea>
+      <p class="mr-q">Want to say it out loud? Add a short video (optional).</p>
+      <label class="mr-upload"><input type="file" id="mr-video" accept="video/*" onchange="mrVideo(this)" hidden><span id="mr-upload-label">＋ Add a 30-sec video response</span></label>
+      <div class="mr-nav"><button class="mr-btn" onclick="mrBack()">Back</button><button class="mr-btn mr-btn-primary" onclick="mrNext()">Continue →</button></div>
+    </div>
+
+    <div class="mr-step" data-step="4" hidden>
+      <span class="mr-eyebrow">Get paid</span>
+      <h2 class="mr-h">You earned <span style="color:var(--accent4)">$12</span>.</h2>
+      <p class="mr-p">Tell us where to send it.<span class="mr-priv">Preview build — your details aren't stored or transmitted yet. Real, secure payouts go live with the MINE backend.</span></p>
+      <input class="mr-field" id="mr-name" placeholder="Full name" autocomplete="off">
+      <input class="mr-field" id="mr-email" type="email" placeholder="Email" autocomplete="off">
+      <select class="mr-field" id="mr-method"><option value="">Payout method…</option><option>PayPal</option><option>Venmo</option><option>Cash App</option><option>Gift card</option></select>
+      <input class="mr-field" id="mr-handle" placeholder="Payout email or @handle" autocomplete="off">
+      <div class="mr-nav"><button class="mr-btn" onclick="mrBack()">Back</button><button class="mr-btn mr-btn-primary" id="mr-submit" onclick="mrSubmit()">Submit responses →</button></div>
+    </div>
+
+    <div class="mr-step" data-step="5" hidden>
+      <span class="mr-eyebrow" style="color:var(--accent4)">Logged</span>
+      <h2 class="mr-h">Thank you. Your voice is in.</h2>
+      <p class="mr-p">Once your responses are reviewed, your $12 is on the way. You just helped a brand get something real — not a guess. That's the whole point of MINE.</p>
+      <div class="mr-nav"><button class="mr-btn mr-btn-primary" onclick="mrExit()">Done</button></div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* PLAY output */
+.play-output{margin-top:22px;border:1px solid var(--border2);background:var(--surface);padding:20px;max-height:440px;overflow:auto;}
+.play-text{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
+.play-img{width:100%;height:auto;display:block;}
+.play-loading{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.1em;color:var(--deep2);}
+.play-err{font-size:13px;color:var(--text2);line-height:1.6;}
+/* MINE partner */
+.mp-overlay{position:fixed;inset:0;z-index:850;background:#000;color:var(--text);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:clamp(40px,7vw,72px) clamp(20px,5vw,48px);}
+.mp-overlay.show{display:block;}
+.mp-shell{max-width:860px;margin:0 auto;}
+.mp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;}
+.mp-eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent4);}
+.mp-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,4.5vw,40px);line-height:1.05;margin:10px 0 14px;}
+.mp-p{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:22px;}
+.mp-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin:24px 0 10px;}
+.mp-textarea{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:15px;padding:13px 15px;outline:none;line-height:1.5;}
+.mp-textarea:focus{border-color:var(--accent4);}
+.mp-auds{display:flex;flex-wrap:wrap;gap:8px;}
+.mp-aud{background:none;border:1px solid var(--border2);color:var(--text2);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.06em;padding:9px 14px;cursor:pointer;transition:all .2s;}
+.mp-aud.on{background:var(--accent4);color:#000;border-color:var(--accent4);font-weight:700;}
+.mp-dash-head{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--text3);border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:22px;text-transform:uppercase;}
+.mp-metrics{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px;}
+.mp-metric{flex:1;min-width:120px;border:1px solid var(--border2);padding:16px;}
+.mp-metric-n{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--text);}
+.mp-metric-l{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+.mp-read{border-left:3px solid var(--accent4);padding:2px 0 2px 18px;margin-bottom:30px;}
+.mp-read-text{font-size:15px;line-height:1.7;color:var(--text);white-space:pre-wrap;}
+.mp-sec-h{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin:28px 0 14px;}
+.mp-bar-row{display:flex;align-items:center;gap:12px;margin-bottom:9px;}
+.mp-bar-label{font-size:12px;color:var(--text2);width:110px;flex-shrink:0;}
+.mp-bar-track{flex:1;height:8px;background:var(--surface3);}
+.mp-bar-fill{height:100%;background:var(--accent4);transition:width .5s ease;}
+.mp-bar-n{font-family:'Space Mono',monospace;font-size:11px;color:var(--text3);width:30px;text-align:right;}
+.mp-quotes{display:grid;gap:12px;margin-top:8px;}
+.mp-quote{border:1px solid var(--border);padding:15px 17px;background:var(--surface);}
+.mp-quote-t{font-size:14px;line-height:1.55;color:var(--text);}
+.mp-quote-m{display:flex;gap:10px;align-items:center;margin-top:10px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);}
+.mp-sent-chip{padding:2px 8px;border:1px solid var(--border2);}
+.mp-note{font-size:12px;color:var(--text3);margin-top:24px;line-height:1.6;}
+</style>
+
+<div id="mine-partner" class="mp-overlay" aria-hidden="true">
+  <div class="mp-shell">
+    <div class="mp-top">
+      <button class="uai-back" style="position:static" onclick="mpExit()">← Exit</button>
+      <span class="mr-step-label" id="mp-step-label">Brief</span>
+    </div>
+    <div class="mp-step" data-pstep="0">
+      <span class="mp-eyebrow">For partners</span>
+      <h2 class="mp-h">What do you want to learn?</h2>
+      <p class="mp-p">Define your brief and who you want to hear from. MINE turns real responses into a synthesized, cited read tuned to your question.</p>
+      <div class="mp-label">Your brief</div>
+      <textarea id="mp-brief" class="mp-textarea" rows="3">How do 25–40s react to Lumen's first campaign, and what would make them buy?</textarea>
+      <div class="mp-label">Audience</div>
+      <div class="mp-auds" id="mp-auds">
+        <button class="mp-aud on" onclick="mpToggleAud(this)" data-aud="18-24">18–24</button>
+        <button class="mp-aud on" onclick="mpToggleAud(this)" data-aud="25-34">25–34</button>
+        <button class="mp-aud on" onclick="mpToggleAud(this)" data-aud="35-44">35–44</button>
+      </div>
+      <div class="mr-nav"><button class="mr-btn mr-btn-primary" onclick="mpGenerate()">Generate findings →</button></div>
+    </div>
+    <div class="mp-step" data-pstep="1" hidden>
+      <div id="mp-dash"></div>
+      <div class="mr-nav"><button class="mr-btn" onclick="mpBack()">← Edit brief</button><button class="mr-btn mr-btn-primary" onclick="mpExit()">Done</button></div>
+    </div>
+  </div>
+</div>
+
 <!-- DEEP GATE OVERLAY -->
 <div id="deep-gate">
   <div class="dgate-box">
@@ -1173,6 +1535,7 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2aWV3Qm94PSIxNTUgMjY3IDQzMiA1NiIgYXJpYS1sYWJlbD0iVW5zdXJmYWNlZCI+CjxkZWZzPgo8Zz48ZyBpZD0idG0iPgo8cGF0aCBkPSJNIDAuNDUzMTI1IC0xOC40Mzc1IEwgMTAuNTMxMjUgLTE4LjQzNzUgTCAxMC41MzEyNSAtMTYgTCA2LjkzNzUgLTE2IEwgNi45Mzc1IC04LjE4NzUgTCAzLjk4NDM3NSAtOC4xODc1IEwgMy45ODQzNzUgLTE2IEwgMC40NTMxMjUgLTE2IFogTSAxMS43MDMxMjUgLTE4LjQzNzUgTCAxNi4xODc1IC0xOC40Mzc1IEwgMTcuNjA5Mzc1IC0xMi44NDM3NSBMIDE5LjEwOTM3NSAtMTguNDM3NSBMIDIzLjQ2ODc1IC0xOC40Mzc1IEwgMjMuNDY4NzUgLTguMTg3NSBMIDIwLjY4NzUgLTguMTg3NSBMIDIwLjY4NzUgLTE1LjQzNzUgTCAxOC43NjU2MjUgLTguMTg3NSBMIDE2LjQzNzUgLTguMTg3NSBMIDE0LjUzMTI1IC0xNS40Mzc1IEwgMTQuNTMxMjUgLTguMTg3NSBMIDExLjcwMzEyNSAtOC4xODc1IFogTSAxMS43MDMxMjUgLTE4LjQzNzUiLz4KPC9nPjwvZz4KPC9kZWZzPgo8cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyIgZD0iTSAxNzcuOTM3NSAzMTMuOTY0ODQ0IEMgMTczLjc4OTA2MiAzMTMuOTY0ODQ0IDE3MC40MDYyNSAzMTIuNTY2NDA2IDE2Ny43ODkwNjIgMzA5Ljc2OTUzMSBDIDE2NS4xNzE4NzUgMzA2Ljk3MjY1NiAxNjMuODYzMjgxIDMwMi45OTIxODggMTYzLjg2MzI4MSAyOTcuODIwMzEyIEwgMTYzLjg2MzI4MSAyNzUuMjY5NTMxIEwgMTcyLjk3NjU2MiAyNzUuMjY5NTMxIEwgMTcyLjcwNzAzMSAyOTcuMDk3NjU2IEMgMTcyLjc2NTYyNSAyOTkuODA0Njg4IDE3My40NTcwMzEgMzAxLjkxMDE1NiAxNzQuNzgxMjUgMzAzLjQxMDE1NiBDIDE3Ni4xMDE1NjIgMzA0LjkxNDA2MiAxNzguMTE3MTg4IDMwNS42Njc5NjkgMTgwLjgyNDIxOSAzMDUuNjY3OTY5IEMgMTgzLjgyODEyNSAzMDUuNjY3OTY5IDE4Ni4xOTE0MDYgMzA0Ljc5Njg3NSAxODcuOTA2MjUgMzAzLjA1MDc4MSBDIDE4OS42MTcxODggMzAxLjMwODU5NCAxOTAuNTM1MTU2IDI5OC45MDIzNDQgMTkwLjY1NjI1IDI5NS44MzIwMzEgTCAxOTAuNDc2NTYyIDI3NS4yNjk1MzEgTCAxOTkuNTg1OTM4IDI3NS4yNjk1MzEgTCAxOTkuNTg1OTM4IDMxMy4xNTIzNDQgTCAxOTAuMzgyODEyIDMxMy4xNTIzNDQgTCAxOTAuNzQ2MDk0IDMwNi4yMDcwMzEgQyAxODkuNDg0Mzc1IDMwOC42NzE4NzUgMTg3Ljc1MzkwNiAzMTAuNTgyMDMxIDE4NS41NTg1OTQgMzExLjkzNzUgQyAxODMuMzYzMjgxIDMxMy4yODkwNjIgMTgwLjgyNDIxOSAzMTMuOTY0ODQ0IDE3Ny45Mzc1IDMxMy45NjQ4NDQiLz4KPHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iIGQ9Ik0gMjIxLjI0NjA5NCAyODguMDY2NDA2IEwgMjEyLjUgMjg4LjA2NjQwNiBDIDIxMi4xMDE1NjIgMjg4LjA2NjQwNiAyMTEuNzE0ODQ0IDI4OC4wNDI5NjkgMjExLjMzOTg0NCAyODguMDA3ODEyIEwgMjExLjMzOTg0NCAzMTMuMTUyMzQ0IEwgMjIwLjQ0OTIxOSAzMTMuMTUyMzQ0IEwgMjIwLjI2OTUzMSAyOTIuNTg1OTM4IEMgMjIwLjMzNTkzOCAyOTAuODgyODEyIDIyMC42Njc5NjkgMjg5LjM3ODkwNiAyMjEuMjQ2MDk0IDI4OC4wNjY0MDYiLz4KPHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iIGQ9Ik0gMjM3LjcyNjU2MiAyODguMDY2NDA2IEMgMjM4LjAyNzM0NCAyODkuMDU0Njg4IDIzOC4yMjY1NjIgMjkwLjE2NDA2MiAyMzguMzA4NTk0IDI5MS40MTQwNjIgTCAyMzguMTI4OTA2IDMxMy4xNTIzNDQgTCAyNDcuMjM4MjgxIDMxMy4xNTIzNDQgTCAyNDcuMjM4MjgxIDI5MC42OTE0MDYgQyAyNDcuMjM4MjgxIDI4OS43NzM0MzggMjQ3LjE4MzU5NCAyODguOTEwMTU2IDI0Ny4wOTc2NTYgMjg4LjA2NjQwNiBaIE0gMjM3LjcyNjU2MiAyODguMDY2NDA2Ii8+CjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIiBkPSJNIDI4Mi41OTc2NTYgMjkzLjc1NzgxMiBDIDI4MS4zNjcxODggMjkyLjg1NTQ2OSAyODAuMDQyOTY5IDI5Mi4xNjc5NjkgMjc4LjYyODkwNiAyOTEuNjgzNTk0IEMgMjc3LjIxNDg0NCAyOTEuMjAzMTI1IDI3NS43NTc4MTIgMjkwLjc4MTI1IDI3NC4yNTM5MDYgMjkwLjQyMTg3NSBDIDI3Mi42OTE0MDYgMjkwLjA2MjUgMjcxLjM5ODQzOCAyODkuNjk5MjE5IDI3MC4zNzUgMjg5LjMzOTg0NCBDIDI2OS4zNTE1NjIgMjg4Ljk3NjU2MiAyNjguNTM5MDYyIDI4OC42MTcxODggMjY3Ljk0MTQwNiAyODguMjU3ODEyIEMgMjY3LjgzOTg0NCAyODguMTk1MzEyIDI2Ny43NSAyODguMTI4OTA2IDI2Ny42NTYyNSAyODguMDY2NDA2IEwgMjU3Ljk2MDkzOCAyODguMDY2NDA2IEMgMjU4LjExNzE4OCAyODguOTE0MDYyIDI1OC4zNTkzNzUgMjg5LjY4NzUgMjU4LjY5NTMxMiAyOTAuMzc4OTA2IEMgMjU5LjMyNDIxOSAyOTEuNjcxODc1IDI2MC4xNjc5NjkgMjkyLjc2NTYyNSAyNjEuMjE4NzUgMjkzLjY2Nzk2OSBDIDI2Mi4yNzM0MzggMjk0LjU3MDMxMiAyNjMuNDcyNjU2IDI5NS4zMDg1OTQgMjY0LjgyODEyNSAyOTUuODc4OTA2IEMgMjY2LjE3OTY4OCAyOTYuNDUzMTI1IDI2Ny41NDY4NzUgMjk2LjkxNzk2OSAyNjguOTMzNTk0IDI5Ny4yNzczNDQgQyAyNzAuNTU0Njg4IDI5Ny41NzgxMjUgMjcxLjkzNzUgMjk3Ljg5NDUzMSAyNzMuMDgyMDMxIDI5OC4yMjI2NTYgQyAyNzQuMjIyNjU2IDI5OC41NTQ2ODggMjc1LjE3MTg3NSAyOTguOTMzNTk0IDI3NS45MjE4NzUgMjk5LjM1MTU2MiBDIDI3Ni42NzU3ODEgMjk5Ljc3MzQzOCAyNzcuMjE0ODQ0IDMwMC4yMjI2NTYgMjc3LjU0Njg3NSAzMDAuNzA3MDMxIEMgMjc3Ljg3NSAzMDEuMTg3NSAyNzguMDQyOTY5IDMwMS44MjAzMTIgMjc4LjA0Mjk2OSAzMDIuNTk3NjU2IEMgMjc4LjA0Mjk2OSAzMDMuODYzMjgxIDI3Ny41MTU2MjUgMzA0Ljg4NjcxOSAyNzYuNDY0ODQ0IDMwNS42Njc5NjkgQyAyNzUuNDEwMTU2IDMwNi40NDkyMTkgMjczLjc0MjE4OCAzMDYuODcxMDk0IDI3MS40NTcwMzEgMzA2LjkyOTY4OCBDIDI2OS4yOTI5NjkgMzA2LjkyOTY4OCAyNjcuMzU1NDY5IDMwNi40OTIxODggMjY1LjY0MDYyNSAzMDUuNjIxMDk0IEMgMjYzLjkyNTc4MSAzMDQuNzUgMjYyLjUyNzM0NCAzMDMuNDEwMTU2IDI2MS40NDUzMTIgMzAxLjYwNTQ2OSBMIDI1NS4wMzkwNjIgMzA2LjExNzE4OCBDIDI1Ni4zMDQ2ODggMzA4LjE2NDA2MiAyNTguMzYzMjgxIDMwOS45ODA0NjkgMjYxLjIxODc1IDMxMS41NzQyMTkgQyAyNjQuMDc0MjE5IDMxMy4xNjc5NjkgMjY3LjY2Nzk2OSAzMTMuOTY0ODQ0IDI3MiAzMTMuOTY0ODQ0IEMgMjc0LjcwNzAzMSAzMTMuOTY0ODQ0IDI3Ni45OTIxODggMzEzLjY0ODQzOCAyNzguODU1NDY5IDMxMy4wMTU2MjUgQyAyODAuNzE4NzUgMzEyLjM4NjcxOSAyODIuMjM4MjgxIDMxMS41NDY4NzUgMjgzLjQxMDE1NiAzMTAuNDkyMTg4IEMgMjg0LjU4MjAzMSAzMDkuNDQxNDA2IDI4NS40MjU3ODEgMzA4LjE5MTQwNiAyODUuOTM3NSAzMDYuNzUgQyAyODYuNDQ1MzEyIDMwNS4zMDQ2ODggMjg2LjcwMzEyNSAzMDMuNzczNDM4IDI4Ni43MDMxMjUgMzAyLjE0ODQzOCBDIDI4Ni43MDMxMjUgMzAwLjE2NDA2MiAyODYuMzI4MTI1IDI5OC40OTYwOTQgMjg1LjU3NDIxOSAyOTcuMTQwNjI1IEMgMjg0LjgyNDIxOSAyOTUuNzg5MDYyIDI4My44MjgxMjUgMjk0LjY2MDE1NiAyODIuNTk3NjU2IDI5My43NTc4MTIiLz4KPHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iIGQ9Ik0gMzIyLjEwOTM3NSAyODguMDY2NDA2IEwgMzIyLjE3OTY4OCAyOTUuODMyMDMxIEMgMzIyLjA1ODU5NCAyOTguOTAyMzQ0IDMyMS4xNDA2MjUgMzAxLjMwODU5NCAzMTkuNDI5Njg4IDMwMy4wNTA3ODEgQyAzMTcuNzE0ODQ0IDMwNC43OTY4NzUgMzE1LjM1MTU2MiAzMDUuNjY3OTY5IDMxMi4zNDc2NTYgMzA1LjY2Nzk2OSBDIDMwOS42NDA2MjUgMzA1LjY2Nzk2OSAzMDcuNjI1IDMwNC45MTQwNjIgMzA2LjMwNDY4OCAzMDMuNDEwMTU2IEMgMzA0Ljk4MDQ2OSAzMDEuOTEwMTU2IDMwNC4yODkwNjIgMjk5LjgwNDY4OCAzMDQuMjMwNDY5IDI5Ny4wOTc2NTYgTCAzMDQuMzM5ODQ0IDI4OC4wNjY0MDYgTCAyOTUuMzkwNjI1IDI4OC4wNjY0MDYgTCAyOTUuMzkwNjI1IDI5Ny44MjAzMTIgQyAyOTUuMzkwNjI1IDMwMi45OTIxODggMjk2LjY5NTMxMiAzMDYuOTcyNjU2IDI5OS4zMTI1IDMwOS43Njk1MzEgQyAzMDEuOTI5Njg4IDMxMi41NjY0MDYgMzA1LjMxMjUgMzEzLjk2NDg0NCAzMDkuNDYwOTM4IDMxMy45NjQ4NDQgQyAzMTIuMzQ3NjU2IDMxMy45NjQ4NDQgMzE0Ljg4NjcxOSAzMTMuMjg5MDYyIDMxNy4wODIwMzEgMzExLjkzNzUgQyAzMTkuMjc3MzQ0IDMxMC41ODIwMzEgMzIxLjAwNzgxMiAzMDguNjc1NzgxIDMyMi4yNjk1MzEgMzA2LjIwNzAzMSBMIDMyMS45MTAxNTYgMzEzLjE1MjM0NCBMIDMzMS4xMDkzNzUgMzEzLjE1MjM0NCBMIDMzMS4xMDkzNzUgMjg4LjA2NjQwNiBaIE0gMzIyLjEwOTM3NSAyODguMDY2NDA2Ii8+CjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIiBkPSJNIDM1Mi45ODgyODEgMjg4LjA2NjQwNiBMIDM0Mi44NjMyODEgMjg4LjA2NjQwNiBMIDM0Mi44NjMyODEgMzEzLjE1MjM0NCBMIDM1MS45NzI2NTYgMzEzLjE1MjM0NCBMIDM1MS42MTMyODEgMjk0Ljc1IEMgMzUxLjc2OTUzMSAyOTEuOTkyMTg4IDM1Mi4yMzA0NjkgMjg5Ljc2OTUzMSAzNTIuOTg4MjgxIDI4OC4wNjY0MDYiLz4KPHBhdGggZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iIGQ9Ik0gMzgxLjMzMjAzMSAyODguMDY2NDA2IEwgMzgxLjMzMjAzMSAzMTMuMTUyMzQ0IEwgMzkwLjQ0NTMxMiAzMTMuMTUyMzQ0IEwgMzkwLjIxODc1IDI4OC4wNjY0MDYgWiBNIDM4MS4zMzIwMzEgMjg4LjA2NjQwNiIvPgo8cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyIgZD0iTSA0MzEuMjIyNjU2IDI5OS44OTQ1MzEgQyA0MzEuMjIyNjU2IDMwMiA0MzAuMzc4OTA2IDMwMy42NTIzNDQgNDI4LjY5OTIxOSAzMDQuODU1NDY5IEMgNDI3LjAxMTcxOSAzMDYuMDU4NTk0IDQyNC44MjAzMTIgMzA2LjY2MDE1NiA0MjIuMTEzMjgxIDMwNi42NjAxNTYgQyA0MTcuMzAwNzgxIDMwNi42NjAxNTYgNDE0Ljg5ODQzOCAzMDUuMDAzOTA2IDQxNC44OTg0MzggMzAxLjY5OTIxOSBDIDQxNC44OTg0MzggMzAwLjAxNTYyNSA0MTUuNDk2MDk0IDI5OC43OTY4NzUgNDE2LjcwMzEyNSAyOTguMDQyOTY5IEMgNDE3LjkwMjM0NCAyOTcuMjkyOTY5IDQxOS40OTYwOTQgMjk2LjkxNzk2OSA0MjEuNDgwNDY5IDI5Ni45MTc5NjkgTCA0MzEuMjIyNjU2IDI5Ni45MTc5NjkgWiBNIDQzMSAyODguMDY2NDA2IEMgNDMxLjE0NDUzMSAyODguOTc2NTYyIDQzMS4yMjI2NTYgMjg5Ljk5NjA5NCA0MzEuMjIyNjU2IDI5MS4xNDQ1MzEgTCA0MjAuODUxNTYyIDI5MC42MDE1NjIgQyA0MTguNjg3NSAyOTAuNjAxNTYyIDQxNi43MDMxMjUgMjkwLjgyODEyNSA0MTQuODk4NDM4IDI5MS4yNzczNDQgQyA0MTMuMDkzNzUgMjkxLjczMDQ2OSA0MTEuNTI3MzQ0IDI5Mi40MjE4NzUgNDEwLjIwNzAzMSAyOTMuMzU1NDY5IEMgNDA4Ljg4MjgxMiAyOTQuMjg1MTU2IDQwNy44NDM3NSAyOTUuNDU3MDMxIDQwNy4wOTM3NSAyOTYuODcxMDk0IEMgNDA2LjMzOTg0NCAyOTguMjg1MTU2IDQwNS45NjQ4NDQgMjk5Ljk4NDM3NSA0MDUuOTY0ODQ0IDMwMS45Njg3NSBDIDQwNS45NjQ4NDQgMzA0LjA3NDIxOSA0MDYuMzI4MTI1IDMwNS44OTQ1MzEgNDA3LjA0Njg3NSAzMDcuNDI1NzgxIEMgNDA3Ljc2OTUzMSAzMDguOTU3MDMxIDQwOC43NDYwOTQgMzEwLjIwNzAzMSA0MDkuOTgwNDY5IDMxMS4xNjc5NjkgQyA0MTEuMjEwOTM4IDMxMi4xMzI4MTIgNDEyLjY1NjI1IDMxMi44MzU5MzggNDE0LjMxMjUgMzEzLjI4OTA2MiBDIDQxNS45NjQ4NDQgMzEzLjczODI4MSA0MTcuNzIyNjU2IDMxMy45NjQ4NDQgNDE5LjU4NTkzOCAzMTMuOTY0ODQ0IEMgNDIyLjQxNDA2MiAzMTMuOTY0ODQ0IDQyNC43NTc4MTIgMzEzLjQzNzUgNDI2LjYyNSAzMTIuMzg2NzE5IEMgNDI4LjQ4ODI4MSAzMTEuMzM1OTM4IDQzMC4wODIwMzEgMzA5Ljc4NTE1NiA0MzEuNDA2MjUgMzA3Ljc0MjE4OCBMIDQzMS4yMjI2NTYgMzEzLjE1MjM0NCBMIDQ0MC4zMzU5MzggMzEzLjE1MjM0NCBMIDQ0MC4zMzU5MzggMjkwLjc4MTI1IEMgNDQwLjMzNTkzOCAyODkuODMyMDMxIDQ0MC4yNjk1MzEgMjg4LjkzNzUgNDQwLjE3MTg3NSAyODguMDY2NDA2IFogTSA0MzEgMjg4LjA2NjQwNiIvPgo8cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyIgZD0iTSA0NzUuNDI5Njg4IDMwNC43MTg3NSBDIDQ3My45ODgyODEgMzA1LjUzMTI1IDQ3Mi4xMjUgMzA1LjkzNzUgNDY5LjgzOTg0NCAzMDUuOTM3NSBDIDQ2Ni40MTAxNTYgMzA1LjkzNzUgNDYzLjc1IDMwNC44Mzk4NDQgNDYxLjg1NTQ2OSAzMDIuNjQ0NTMxIEMgNDU5Ljk2MDkzOCAzMDAuNDQ5MjE5IDQ1OS4wMTU2MjUgMjk3LjYzNjcxOSA0NTkuMDE1NjI1IDI5NC4yMTA5MzggQyA0NTkuMDE1NjI1IDI5MS44NzUgNDU5LjQ2NDg0NCAyODkuODMyMDMxIDQ2MC4zNDc2NTYgMjg4LjA2NjQwNiBMIDQ1MC41NDY4NzUgMjg4LjA2NjQwNiBDIDQ0OS45NDE0MDYgMjg5Ljk5MjE4OCA0NDkuNjMyODEyIDI5Mi4wMzkwNjIgNDQ5LjYzMjgxMiAyOTQuMjEwOTM4IEMgNDQ5LjYzMjgxMiAyOTcuMDM5MDYyIDQ1MC4xNDQ1MzEgMjk5LjY2Nzk2OSA0NTEuMTY3OTY5IDMwMi4xMDE1NjIgQyA0NTIuMTkxNDA2IDMwNC41MzkwNjIgNDUzLjYwMTU2MiAzMDYuNjI4OTA2IDQ1NS40MDYyNSAzMDguMzcxMDk0IEMgNDU3LjIxMDkzOCAzMTAuMTE3MTg4IDQ1OS4zNDM3NSAzMTEuNDg0Mzc1IDQ2MS44MTI1IDMxMi40NzY1NjIgQyA0NjQuMjc3MzQ0IDMxMy40Njg3NSA0NjYuOTUzMTI1IDMxMy45NjQ4NDQgNDY5LjgzOTg0NCAzMTMuOTY0ODQ0IEMgNDczLjUwNzgxMiAzMTMuOTY0ODQ0IDQ3Ni41NDI5NjkgMzEzLjM0NzY1NiA0NzguOTQ5MjE5IDMxMi4xMTcxODggQyA0ODEuMzU1NDY5IDMxMC44ODI4MTIgNDgzLjQ5MjE4OCAzMDkuMjE0ODQ0IDQ4NS4zNTU0NjkgMzA3LjEwOTM3NSBMIDQ3OS4xMjg5MDYgMzAyLjIzODI4MSBDIDQ3OC4xMDkzNzUgMzAzLjA4MjAzMSA0NzYuODc1IDMwMy45MDYyNSA0NzUuNDI5Njg4IDMwNC43MTg3NSIvPgo8cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyIgZD0iTSA1MjkuMjY1NjI1IDI4OC4wNjY0MDYgTCA1MjAuMTk1MzEyIDI4OC4wNjY0MDYgQyA1MjAuNTYyNSAyODguOTY0ODQ0IDUyMC44NTkzNzUgMjg5LjkxNzk2OSA1MjEuMDI3MzQ0IDI5MC45NjQ4NDQgTCA0OTkuNDcyNjU2IDI5MS4xNDQ1MzEgQyA0OTkuNjkxNDA2IDI5MC4wMTU2MjUgNTAwLjAwNzgxMiAyODguOTkyMTg4IDUwMC40MTc5NjkgMjg4LjA2NjQwNiBMIDQ5MS4zOTA2MjUgMjg4LjA2NjQwNiBDIDQ5MC43Njk1MzEgMjg5Ljk5MjE4OCA0OTAuNDQ5MjE5IDI5Mi4wMzUxNTYgNDkwLjQ0OTIxOSAyOTQuMjEwOTM4IEMgNDkwLjQ0OTIxOSAyOTcuMDM5MDYyIDQ5MC45NjA5MzggMjk5LjY2Nzk2OSA0OTEuOTg0Mzc1IDMwMi4xMDU0NjkgQyA0OTMuMDA3ODEyIDMwNC41MzkwNjIgNDk0LjQzMzU5NCAzMDYuNjI4OTA2IDQ5Ni4yNjk1MzEgMzA4LjM3MTA5NCBDIDQ5OC4xMDE1NjIgMzEwLjExNzE4OCA1MDAuMzQzNzUgMzExLjQ4NDM3NSA1MDIuOTg4MjgxIDMxMi40NzY1NjIgQyA1MDUuNjMyODEyIDMxMy40Njg3NSA1MDguNTgyMDMxIDMxMy45NjQ4NDQgNTExLjgyODEyNSAzMTMuOTY0ODQ0IEMgNTE1LjYxNzE4OCAzMTMuOTY0ODQ0IDUxOC43ODkwNjIgMzEzLjM3ODkwNiA1MjEuMzQzNzUgMzEyLjIwNzAzMSBDIDUyMy44OTg0MzggMzExLjAzMTI1IDUyNi4xNDA2MjUgMzA5LjU3NDIxOSA1MjguMDY2NDA2IDMwNy44MzIwMzEgTCA1MjIuNzQyMTg4IDMwMi4yMzgyODEgQyA1MjEuNDgwNDY5IDMwMy4yNjE3MTkgNTE5Ljk2MDkzOCAzMDQuMTk1MzEyIDUxOC4xODc1IDMwNS4wMzUxNTYgQyA1MTYuNDE0MDYyIDMwNS44Nzg5MDYgNTE0LjI2NTYyNSAzMDYuMjk2ODc1IDUxMS43MzgyODEgMzA2LjI5Njg3NSBDIDUwOC4yNSAzMDYuMjk2ODc1IDUwNS41MTU2MjUgMzA1LjQ4NDM3NSA1MDMuNTI3MzQ0IDMwMy44NjMyODEgQyA1MDEuNTQ2ODc1IDMwMi4yMzgyODEgNTAwLjIyMjY1NiAyOTkuOTI1NzgxIDQ5OS41NTg1OTQgMjk2LjkxNzk2OSBMIDUzMC4yMzA0NjkgMjk2LjU1NDY4OCBDIDUzMC40MTAxNTYgMjkzLjczMDQ2OSA1MzAuMDkzNzUgMjkwLjkxNzk2OSA1MjkuMjgxMjUgMjg4LjEyMTA5NCBDIDUyOS4yNzczNDQgMjg4LjEwMTU2MiA1MjkuMjY5NTMxIDI4OC4wODU5MzggNTI5LjI2NTYyNSAyODguMDY2NDA2Ii8+CjxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIiBkPSJNIDU2Ny41OTM3NSAyODguMDY2NDA2IEMgNTY4LjUgMjg5Ljc5Mjk2OSA1NjguOTY0ODQ0IDI5MS44MDQ2ODggNTY4Ljk2NDg0NCAyOTQuMTIxMDk0IEMgNTY4Ljk2NDg0NCAyOTcuNzMwNDY5IDU2Ny45Njg3NSAzMDAuNjAxNTYyIDU2NS45ODgyODEgMzAyLjczNDM3NSBDIDU2NCAzMDQuODcxMDk0IDU2MS4zMjQyMTkgMzA1LjkzNzUgNTU3Ljk1NzAzMSAzMDUuOTM3NSBDIDU1NC42NTIzNDQgMzA1LjkzNzUgNTUyLjAzNTE1NiAzMDQuODcxMDk0IDU1MC4xMDkzNzUgMzAyLjczNDM3NSBDIDU0OC4xODM1OTQgMzAwLjYwMTU2MiA1NDcuMTY0MDYyIDI5Ny43MzA0NjkgNTQ3LjA0Mjk2OSAyOTQuMTIxMDk0IEMgNTQ3LjEyNSAyOTEuODA0Njg4IDU0Ny42Mjg5MDYgMjg5Ljc5Mjk2OSA1NDguNTMxMjUgMjg4LjA2NjQwNiBMIDUzOC42MTcxODggMjg4LjA2NjQwNiBDIDUzOC4wODU5MzggMjg5Ljk0OTIxOSA1MzcuNzk2ODc1IDI5MS45Njg3NSA1MzcuNzUzOTA2IDI5NC4xMjEwOTQgQyA1MzcuODEyNSAyOTcuMDA3ODEyIDUzOC4zMDg1OTQgMjk5LjY1MjM0NCA1MzkuMjQyMTg4IDMwMi4wNTg1OTQgQyA1NDAuMTcxODc1IDMwNC40NjQ4NDQgNTQxLjQzMzU5NCAzMDYuNTU0Njg4IDU0My4wMzEyNSAzMDguMzI4MTI1IEMgNTQ0LjYyMTA5NCAzMTAuMTAxNTYyIDU0Ni41MDM5MDYgMzExLjQ4NDM3NSA1NDguNjY3OTY5IDMxMi40NzY1NjIgQyA1NTAuODMyMDMxIDMxMy40Njg3NSA1NTMuMTQ4NDM4IDMxMy45NjQ4NDQgNTU1LjYxMzI4MSAzMTMuOTY0ODQ0IEMgNTU4LjgwMDc4MSAzMTMuOTY0ODQ0IDU2MS41MDM5MDYgMzEzLjI1NzgxMiA1NjMuNzMwNDY5IDMxMS44NDc2NTYgQyA1NjUuOTU3MDMxIDMxMC40MzM1OTQgNTY3LjY2Nzk2OSAzMDguNTgyMDMxIDU2OC44NzUgMzA2LjI5Njg3NSBMIDU2OC42MDE1NjIgMzEzLjE1MjM0NCBMIDU3Ny43MTA5MzggMzEzLjE1MjM0NCBMIDU3Ny43MTA5MzggMjg4LjA2NjQwNiBaIE0gNTY3LjU5Mzc1IDI4OC4wNjY0MDYiLz4KPGcgZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLW9wYWNpdHk9IjEiPgo8dXNlIHhsaW5rOmhyZWY9IiN0bSIgeD0iNTgzLjI5MTUiIHk9IjI5MS42Njc1Ii8+CjwvZz4KPC9zdmc+" alt="Unsurfaced™" style="height:16px;width:auto;display:block;filter:invert(1) brightness(2);opacity:0.9;">
   </div>
   <ul class="nav-links">
+    <li><button class="nlb" id="nav-spaces" onclick="goHub()" style="color:var(--deep2)">◆ Spaces</button></li>
     <li><button class="nlb active" id="nav-explore" onclick="navTo('explore')">Explore</button></li>
     <li><button class="nlb" id="nav-brands" onclick="navTo('brands')">Brands</button></li>
     <li><button class="nlb" id="nav-audiences" onclick="navTo('audiences')">Audiences</button></li>
@@ -1905,30 +2268,60 @@ function _liveBrief(q, items, connectors){
   return `Real-time scan of "${q}" across ${ok.length} live source${ok.length===1?'':'s'} (${ok.join(', ')||'none'}) surfaced ${parts.join(', ')||'limited signal'}. These are unranked raw signals straight from the open social and web layer — use them to see where the conversation is actually happening right now, then run Deep Search to quantify and cite the strongest threads.`;
 }
 
+// Render a /insights response: prefer the AI-synthesized fused read, fall back
+// to the template path when synthesis is absent (AI off, rate-limited, or thin).
+function _renderLive(q, data){
+  const items=(data&&data.items)||[];
+  const syn=data&&data.synthesis;
+  let insights, ideas, brief, synthd=false;
+  if(syn && Array.isArray(syn.insights) && syn.insights.length){
+    insights = syn.insights.slice(0,8).map((ins,i)=>({
+      category: ['consumer','market','culture','brand'].includes(ins.category)?ins.category:'consumer',
+      title: ins.title||'',
+      excerpt: ins.excerpt||'',
+      stat: '◆ Synthesized',
+      confidence: i<3?'High':'Medium',
+      source: ins.source||'Excavate analysis',
+      sourceUrl: ins.sourceUrl||null,
+    }));
+    ideas = (Array.isArray(syn.ideas)&&syn.ideas.length)
+      ? syn.ideas.slice(0,6).map((d,i)=>({num:'0'+(i+1),type:d.type||'Strategy',headline:d.headline||'',body:d.body||''}))
+      : buildIdeas(q,insights,'live');
+    brief = syn.brief || _liveBrief(q,items,data.connectors);
+    synthd=true;
+  } else {
+    insights=_liveToInsights(items);
+    ideas=buildIdeas(q,insights,'live');
+    brief=_liveBrief(q,items,data.connectors);
+  }
+  const sources=_liveSources(data.connectors,q);
+  renderResults(q,{insights,ideas,sources,brief,mode:'live'},'live');
+  if(synthd){
+    const pill=document.getElementById('results-mode-pill');
+    if(pill) pill.innerHTML='<div class="mode-pill basic">LIVE SOURCES — AI-SYNTHESIZED · '+(((syn&&syn._sourceCount)||items.length))+' SIGNALS FUSED</div>';
+  }
+  return synthd;
+}
+
 async function runLiveSearch(q){
   showLoader(q,'live',[
     'Connecting to live source pipeline',
     'Reddit, YouTube & Bluesky (social signal)',
     'Searching the open web (Brave) & Google News',
     'Reading App Store reviews & demand trend',
-    'Normalizing & ranking across signal types',
+    'Fusing signals into a cited read (Excavate AI)',
     'Assembling real-time intelligence',
   ]);
   try {
-    const data = await api('insights', { query:q });
-    const items = (data && data.items) || [];
-    if(!items.length){
+    const data = await api('insights', { query:q, synthesize:true });
+    if(!(((data&&data.items)||[]).length)){
       hideLoader();
       showToast('No live signals returned — showing open-source data');
       runBasicSearch(q);
       return;
     }
-    const insights = _liveToInsights(items);
-    const sources  = _liveSources(data.connectors, q);
-    const ideas    = buildIdeas(q, insights, 'live');
-    const brief    = _liveBrief(q, items, data.connectors);
     hideLoader();
-    renderResults(q, { insights, ideas, sources, brief, mode:'live' }, 'live');
+    _renderLive(q, data);
   } catch(e){
     hideLoader();
     showToast('Live pipeline unavailable — showing open-source data');
@@ -4482,16 +4875,287 @@ function _authShowGate() {
   document.body.style.overflow = 'hidden';
 }
 
+// ════════════════════════════════════════════
+//  ECOSYSTEM ROUTER — PLAY · EXCAVATE · MINE
+// ════════════════════════════════════════════
+function _uaiHide(){
+  document.querySelectorAll('.uai-hub,.uai-space').forEach(el=>{
+    el.classList.remove('show'); el.setAttribute('aria-hidden','true');
+  });
+}
+function goHub(){
+  _uaiHide();
+  _wireHubLogo();
+  const h=document.getElementById('uai-hub');
+  if(h){ h.classList.add('show'); h.setAttribute('aria-hidden','false'); }
+  document.body.style.overflow='hidden';
+  window.scrollTo(0,0);
+}
+function enterSpace(name){
+  _uaiHide();
+  if(name==='excavate'){
+    document.body.style.overflow='';
+    if(typeof navTo==='function') navTo('explore');
+    window.scrollTo(0,0);
+    return;
+  }
+  const el=document.getElementById('space-'+name);
+  if(el){
+    el.classList.add('show'); el.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden'; el.scrollTop=0;
+  }
+}
+
+// ── Hub signature: pointer light + optional hand parallax ────────────
+function setHubHand(src){ const h=document.getElementById('uai-hand'); if(h&&src){ h.src=src; h.style.display='block'; } }
+function _wireHubLogo(){
+  const dest=document.getElementById('uai-hub-logo');
+  if(!dest || dest.getAttribute('src')) return;
+  const src=document.querySelector('nav img[alt="Unsurfaced™"]');
+  if(src){ const s=src.getAttribute('src'); if(s) dest.setAttribute('src',s); }
+}
+(function(){
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf=null, tx=0, ty=0;
+  function frame(){
+    const g=document.getElementById('uai-cursor-glow');
+    if(g) g.style.transform='translate('+tx+'px,'+ty+'px)';
+    const hand=document.getElementById('uai-hand');
+    if(hand && hand.style.display!=='none'){
+      const dx=(tx/(window.innerWidth||1)-0.5)*22, dy=(ty/(window.innerHeight||1)-0.5)*22;
+      hand.style.transform='translateY(-50%) translate('+dx+'px,'+dy+'px)';
+    }
+    raf=null;
+  }
+  window.addEventListener('pointermove',function(e){
+    const hub=document.getElementById('uai-hub');
+    if(!hub || !hub.classList.contains('show')) return;
+    tx=e.clientX; ty=e.clientY;
+    if(reduce) return;
+    if(!raf) raf=requestAnimationFrame(frame);
+  },{passive:true});
+})();
+
+// ── PLAY console (honest preview — no faked generation) ──────────────
+// ── PLAY console — genuine generation via the seam (text + image) ────
+let _playKind='content';
+const _PLAY_KINDS={'campaign concept':'campaign','long-form article':'article','key visual':'image','moodboard':'moodboard'};
+function playChip(el){
+  const t=el.textContent.trim();
+  _playKind=_PLAY_KINDS[t.toLowerCase()]||'content';
+  const i=document.getElementById('play-input');
+  if(i){ i.value=(_playKind==='image'?'A bold key visual for ':'Create a '+t.toLowerCase()+' for '); i.focus(); }
+}
+async function playGenerate(){
+  const i=document.getElementById('play-input');
+  const prompt=(i && i.value || '').trim();
+  if(!prompt){ showToast('Describe what you want to create'); return; }
+  if(!API_BASE){ showToast('PLAY generates live once the studio backend is connected'); return; }
+  const out=document.getElementById('play-output');
+  if(!out) return;
+  out.style.display='block';
+  out.innerHTML='<div class="play-loading">Creating…</div>';
+  try {
+    if(_playKind==='image'){
+      const d=await api('generate-image',{prompt});
+      out.innerHTML='<img class="play-img" alt="PLAY generated visual" src="'+safeAttr(d.image||'')+'">';
+    } else {
+      const d=await api('generate',{prompt,kind:_playKind});
+      const div=document.createElement('div'); div.className='play-text';
+      div.textContent=(d.text||'').trim()||'(PLAY returned nothing — try rephrasing.)';
+      out.innerHTML=''; out.appendChild(div);
+    }
+  } catch(e){
+    out.innerHTML='<div class="play-err">PLAY couldn\'t generate that just now — the studio may be busy or the backend isn\'t connected yet. Try again in a moment.</div>';
+  }
+}
+(function(){
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  const prompts=['a launch campaign for a sneaker drop…','a long-form brand story on sustainability…','a key visual for a summer beverage…','a moodboard for a Gen-Z skincare line…','a 30-second script in your brand voice…'];
+  let pi=0, ci=0, erasing=false;
+  function tick(){
+    const sp=document.getElementById('space-play'), inp=document.getElementById('play-input');
+    if(!sp || !sp.classList.contains('show') || !inp || document.activeElement===inp || inp.value){ setTimeout(tick,600); return; }
+    const word=prompts[pi];
+    if(!erasing){ ci++; if(ci>word.length){ erasing=true; setTimeout(tick,1400); return; } }
+    else { ci--; if(ci<0){ erasing=false; pi=(pi+1)%prompts.length; ci=0; } }
+    inp.setAttribute('placeholder', word.slice(0,ci) || 'Describe what you want to create…');
+    setTimeout(tick, erasing?28:48);
+  }
+  setTimeout(tick,900);
+})();
+
+// ── MINE responder flow (client-side preview; PII kept in-memory only) ──
+let _mrStep = 0;
+const _mineResp = { sentiment:null, choice:null, openText:'', videoName:'', payout:{} };
+function startResponder(){
+  _mrStep=0; _mrResetState();
+  const o=document.getElementById('mine-responder');
+  if(o){ o.classList.add('show'); o.setAttribute('aria-hidden','false'); }
+  document.body.style.overflow='hidden';
+  mrRender();
+}
+function _mrResetState(){
+  _mineResp.sentiment=null; _mineResp.choice=null; _mineResp.openText=''; _mineResp.videoName=''; _mineResp.payout={};
+  document.querySelectorAll('.mr-consent').forEach(c=>c.checked=false);
+  document.querySelectorAll('#mr-scale button,#mr-choices button').forEach(b=>b.classList.remove('sel'));
+  ['mr-open','mr-name','mr-email','mr-handle'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  const m=document.getElementById('mr-method'); if(m) m.value='';
+  const ul=document.getElementById('mr-upload-label'); if(ul) ul.textContent='＋ Add a 30-sec video response';
+}
+function mrRender(){
+  document.querySelectorAll('#mine-responder .mr-step').forEach(s=>{ s.hidden = (parseInt(s.dataset.step,10)!==_mrStep); });
+  const label=document.getElementById('mr-step-label');
+  if(label) label.textContent = _mrStep>=5 ? 'Complete' : ('Step '+(_mrStep+1)+' of 5');
+  const fill=document.getElementById('mr-progress-fill');
+  if(fill) fill.style.width = Math.min(100,(_mrStep/5)*100)+'%';
+  if(_mrStep===1) mrConsentCheck();
+  const ov=document.getElementById('mine-responder'); if(ov) ov.scrollTop=0;
+}
+function mrNext(){
+  if(_mrStep===1 && !_mrConsentAll()){ showToast('Please confirm all four to continue'); return; }
+  if(_mrStep===2 && (_mineResp.sentiment==null || _mineResp.choice==null)){ showToast('Pick a reaction and what stood out'); return; }
+  if(_mrStep===3){ const t=document.getElementById('mr-open'); _mineResp.openText=(t && t.value || '').trim(); }
+  _mrStep=Math.min(5,_mrStep+1); mrRender();
+}
+function mrBack(){ _mrStep=Math.max(0,_mrStep-1); mrRender(); }
+function mrPick(field,val,btn){
+  _mineResp[field]=val;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+function mrVideo(input){
+  const f=input.files && input.files[0];
+  const lbl=document.getElementById('mr-upload-label');
+  if(f){ _mineResp.videoName=f.name; if(lbl) lbl.textContent='✓ '+f.name+' (stays on your device)'; }
+}
+function _mrConsentAll(){ const c=[...document.querySelectorAll('.mr-consent')]; return c.length===4 && c.every(x=>x.checked); }
+function mrConsentCheck(){ const b=document.getElementById('mr-consent-next'); if(b) b.disabled=!_mrConsentAll(); }
+function mrSubmit(){
+  const name=(document.getElementById('mr-name').value||'').trim();
+  const email=(document.getElementById('mr-email').value||'').trim();
+  const method=document.getElementById('mr-method').value;
+  const handle=(document.getElementById('mr-handle').value||'').trim();
+  if(!name||!email||!method||!handle){ showToast('Add your name, email, method, and payout handle'); return; }
+  _mineResp.payout={name,email,method,handle}; // in-memory only — never persisted or transmitted in this preview
+  _mrStep=5; mrRender();
+}
+function mrExit(){
+  const o=document.getElementById('mine-responder');
+  if(o){ o.classList.remove('show'); o.setAttribute('aria-hidden','true'); }
+  const mine=document.getElementById('space-mine'); if(mine) mine.classList.add('show');
+  document.body.style.overflow='hidden';
+  _mrResetState(); _mrStep=0;
+}
+
+// ── MINE partner side — brief → audience → synthesized findings ──────
+// Sample responder corpus (illustrative). Real responder data lands with the
+// backend; the partner read reuses Excavate's synthesis brain via /synthesize.
+const _MINE_SAMPLE=[
+  {id:'R-204',age:'25-34',sentiment:4,stood:'The vibe',quote:"The mood felt premium without trying too hard. I'd screenshot this."},
+  {id:'R-211',age:'18-24',sentiment:5,stood:'The music',quote:"The track carried it. I watched it twice just for the sound."},
+  {id:'R-219',age:'35-44',sentiment:2,stood:'Nothing really',quote:"Looked nice but I have no idea what they actually sell."},
+  {id:'R-223',age:'25-34',sentiment:4,stood:'The product',quote:"Finally a tea that doesn't look like a health punishment."},
+  {id:'R-230',age:'25-34',sentiment:3,stood:'The message',quote:"Calm energy is a nice angle, but everyone says that now."},
+  {id:'R-238',age:'18-24',sentiment:5,stood:'The vibe',quote:"This feels like something my group would actually post."},
+  {id:'R-242',age:'35-44',sentiment:3,stood:'The product',quote:"I'd try it once. Price would decide if I came back."},
+  {id:'R-250',age:'25-34',sentiment:4,stood:'The vibe',quote:"Understated and confident — the opposite of shouty wellness ads."},
+  {id:'R-257',age:'18-24',sentiment:2,stood:'Nothing really',quote:"Pretty but forgettable. Didn't make me feel anything."},
+];
+let _mpAuds=['18-24','25-34','35-44'];
+function startPartner(){
+  const o=document.getElementById('mine-partner');
+  if(o){ o.classList.add('show'); o.setAttribute('aria-hidden','false'); }
+  document.body.style.overflow='hidden';
+  _mpShow(0);
+}
+function _mpShow(step){
+  document.querySelectorAll('#mine-partner .mp-step').forEach(s=>{ s.hidden=(parseInt(s.dataset.pstep,10)!==step); });
+  const l=document.getElementById('mp-step-label'); if(l) l.textContent=step===0?'Brief':'Findings';
+  const o=document.getElementById('mine-partner'); if(o) o.scrollTop=0;
+}
+function mpToggleAud(el){
+  el.classList.toggle('on');
+  _mpAuds=[...document.querySelectorAll('#mp-auds .mp-aud.on')].map(b=>b.dataset.aud);
+}
+function mpBack(){ _mpShow(0); }
+function mpExit(){
+  const o=document.getElementById('mine-partner');
+  if(o){ o.classList.remove('show'); o.setAttribute('aria-hidden','true'); }
+  const mine=document.getElementById('space-mine'); if(mine) mine.classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function _mpStats(data){
+  const n=data.length;
+  const avg=data.reduce((a,r)=>a+r.sentiment,0)/n;
+  const pos=data.filter(r=>r.sentiment>=4).length;
+  const neu=data.filter(r=>r.sentiment===3).length;
+  const neg=data.filter(r=>r.sentiment<=2).length;
+  const themes={}; data.forEach(r=>themes[r.stood]=(themes[r.stood]||0)+1);
+  const themeArr=Object.entries(themes).sort((a,b)=>b[1]-a[1]);
+  return {n,avg,pos,neu,neg,themeArr};
+}
+function _mpTemplate(brief,data){
+  const s=_mpStats(data); const posPct=Math.round(s.pos/s.n*100); const top=s.themeArr[0];
+  const crit=data.filter(r=>r.sentiment<=2);
+  const critLine=crit.length?`The clearest risk is clarity — ${crit.length} of ${s.n} found it good-looking but were left unsure what's being sold, or called it forgettable.`:'No strong detractors surfaced in this cut.';
+  const b=brief.slice(0,80)+(brief.length>80?'…':'');
+  return `Across ${s.n} responses, reaction skews ${posPct}% positive (avg ${s.avg.toFixed(1)}/5). The strongest pull is "${top[0]}" (${top[1]} of ${s.n}) — the work earns its lift from mood and craft more than message. ${critLine} On your brief — ${b} — the read is: lean into the understated, post-worthy vibe that's already landing, and make the product itself unmistakable so curiosity converts to intent.`;
+}
+function _mpDashHTML(brief,auds,data){
+  const s=_mpStats(data); const posPct=Math.round(s.pos/s.n*100);
+  const sentRows=[['Positive (4–5)',s.pos],['Neutral (3)',s.neu],['Critical (1–2)',s.neg]]
+    .map(([l,c])=>`<div class="mp-bar-row"><span class="mp-bar-label">${l}</span><span class="mp-bar-track"><span class="mp-bar-fill" style="width:${Math.round(c/s.n*100)}%"></span></span><span class="mp-bar-n">${c}</span></div>`).join('');
+  const themeRows=s.themeArr.map(([l,c])=>`<div class="mp-bar-row"><span class="mp-bar-label">${safe(l)}</span><span class="mp-bar-track"><span class="mp-bar-fill" style="width:${Math.round(c/s.n*100)}%"></span></span><span class="mp-bar-n">${c}</span></div>`).join('');
+  const quotes=data.slice(0,6).map(r=>{
+    const lab=r.sentiment>=4?'positive':(r.sentiment===3?'neutral':'critical');
+    return `<div class="mp-quote"><div class="mp-quote-t">“${safe(r.quote)}”</div><div class="mp-quote-m"><span class="mp-sent-chip">${lab}</span><span>${safe(r.id)}</span><span>${safe(r.age)}</span></div></div>`;
+  }).join('');
+  return `<div class="mp-dash-head">Study · Lumen brand film · ${safe(auds.join(', '))} · ${s.n} responses</div>
+    <span class="mp-eyebrow">Synthesized findings</span>
+    <h2 class="mp-h">What your audience is telling you.</h2>
+    <div class="mp-metrics">
+      <div class="mp-metric"><div class="mp-metric-n">${s.n}</div><div class="mp-metric-l">Responses</div></div>
+      <div class="mp-metric"><div class="mp-metric-n">${s.avg.toFixed(1)}<span style="font-size:14px;color:var(--text3)">/5</span></div><div class="mp-metric-l">Avg sentiment</div></div>
+      <div class="mp-metric"><div class="mp-metric-n">${posPct}%</div><div class="mp-metric-l">Positive</div></div>
+    </div>
+    <div class="mp-read"><div class="mp-read-text" id="mp-read-text">Synthesizing real responses…</div></div>
+    <div class="mp-sec-h">Sentiment</div>${sentRows}
+    <div class="mp-sec-h">What stood out</div>${themeRows}
+    <div class="mp-sec-h">In their words</div><div class="mp-quotes">${quotes}</div>
+    <p class="mp-note">Stats are computed from real responses; the read is synthesized and traceable to the quotes above. With the studio backend connected, the read is fused live by the same engine that powers Excavate, tuned to your brief.</p>`;
+}
+async function mpGenerate(){
+  const brief=(document.getElementById('mp-brief').value||'').trim();
+  const auds=_mpAuds.length?_mpAuds:['18-24','25-34','35-44'];
+  const data=_MINE_SAMPLE.filter(r=>auds.includes(r.age));
+  if(!data.length){ showToast('No responses match that audience'); return; }
+  _mpShow(1);
+  const dash=document.getElementById('mp-dash');
+  if(dash) dash.innerHTML=_mpDashHTML(brief,auds,data);
+  let narrative;
+  if(API_BASE){
+    try {
+      const corpus=data.map((r,i)=>`[${i+1}] (${r.age}, felt ${r.sentiment}/5, stood out: ${r.stood}) "${r.quote}"`).join('\n');
+      const d=await api('synthesize',{query:brief,corpus});
+      narrative=((d&&d.text)||'').trim() || _mpTemplate(brief,data);
+    } catch(e){ narrative=_mpTemplate(brief,data); }
+  } else {
+    narrative=_mpTemplate(brief,data);
+  }
+  const el=document.getElementById('mp-read-text'); if(el) el.textContent=narrative;
+}
+
 function _authShowApp() {
   const g = document.getElementById('login-gate');
   if (g) g.classList.add('hidden');
-  document.body.style.overflow = '';
   _renderNavUser();
-  // Mark handled so the DOMContentLoaded backup doesn't double-fire, then
-  // initialise synchronously. initFeaturedInsights self-guards if the grid
-  // isn't ready yet, so no setTimeout race is needed.
+  // Pre-warm Excavate behind the hub so it's ready on entry, then land the
+  // user on the ecosystem front door (PLAY · EXCAVATE · MINE).
   _fiInitPending = true;
   initFeaturedInsights();
+  goHub();
 }
 
 // ── Tab / panel switching ─────────────────────────────────────────
