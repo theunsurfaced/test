@@ -1228,6 +1228,10 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
       <input type="text" class="search-bar" id="search-input" placeholder="Search any brand, behavior, category, or cultural trend…" oninput="toggleClearBtn()"/>
       <button class="search-clear" id="search-clear-btn" onclick="clearSearch()" title="Clear search">✕</button>
       <div class="search-actions">
+        <button class="deep-pill-toggle" id="inline-live-toggle" onclick="inlineLiveToggle()" title="Pull real-time signals from Reddit, YouTube, the web, and trend data (requires the proxy)">
+          <span class="pdot"></span>
+          <span id="inline-live-label">LIVE</span>
+        </button>
         <button class="deep-pill-toggle" id="inline-deep-toggle" onclick="inlineDeepToggle()">
           <span class="pdot"></span>
           <span id="inline-deep-label">DEEP</span>
@@ -1685,6 +1689,7 @@ function safeUrl(u) {
 // ════════════════════════════════════════════
 const KEY_SESSION = 'excavate_pplx_key';
 let deepMode = false;
+let liveMode = false;
 let lastSources = [];
 let lastMode = 'basic';
 window._lastInsights = [];
@@ -1706,6 +1711,7 @@ function inlineDeepToggle(){
 
 function enableDeep(){
   deepMode = true;
+  if(liveMode) disableLive();
   document.getElementById('nav-deep-toggle').classList.add('on');
   document.getElementById('nav-api-dot').classList.add('on');
   document.getElementById('nav-deep-label').textContent = 'DEEP: ON';
@@ -1733,6 +1739,30 @@ function disableDeep(){
 
 function openDeepGate(){ document.getElementById('deep-gate').classList.add('open'); }
 function closeDeepGate(){ document.getElementById('deep-gate').classList.remove('open'); }
+
+// ════════════════════════════════════════════
+//  LIVE SOURCES TOGGLE — real-time connector pipeline (/insights)
+// ════════════════════════════════════════════
+function inlineLiveToggle(){
+  if(liveMode){ disableLive(); return; }
+  if(!API_BASE){
+    showToast('Live Sources need the proxy deployed — set API_BASE to your Worker URL');
+    return;
+  }
+  enableLive();
+}
+function enableLive(){
+  liveMode = true;
+  if(deepMode) disableDeep();
+  const t=document.getElementById('inline-live-toggle'); if(t) t.classList.add('on');
+  const l=document.getElementById('inline-live-label'); if(l) l.textContent='LIVE ON';
+  showToast('Live Sources activated — real-time social, web & trend signals');
+}
+function disableLive(){
+  liveMode = false;
+  const t=document.getElementById('inline-live-toggle'); if(t) t.classList.remove('on');
+  const l=document.getElementById('inline-live-label'); if(l) l.textContent='LIVE';
+}
 
 // deep-eye-btn and deep-key-input listeners wired in DOMContentLoaded below
 
@@ -1802,7 +1832,108 @@ function runSearch(){
   document.getElementById('live-results').style.display='none';
   document.getElementById('error-banner').style.display='none';
   if(deepMode && getKey()){ runDeepSearch(q); }
+  else if(liveMode && API_BASE){ runLiveSearch(q); }
   else { runBasicSearch(q); }
+}
+
+// ════════════════════════════════════════════
+//  LIVE SEARCH — real-time connector pipeline via /insights
+//  Falls back to Basic Search if the proxy/connectors are unavailable, so the
+//  product never breaks for a user in real time.
+// ════════════════════════════════════════════
+const _LIVE_TYPE_CAT = { social:'consumer', web:'market', news:'culture', trend:'culture', reviews:'brand' };
+const _LIVE_LABELS = { reddit:'Reddit', youtube:'YouTube', brave:'Brave Web Search', gnews:'Google News', bluesky:'Bluesky', appstore:'App Store Reviews', wikitrends:'Wikipedia Trends' };
+
+function _liveStat(it){
+  if(it.signalType==='social') return '↑ Social signal';
+  if(it.signalType==='web')    return '↑ Web result';
+  if(it.signalType==='trend')  return '↑ Demand signal';
+  if(it.signalType==='news')   return '↑ News signal';
+  if(it.signalType==='reviews')return '↑ Review signal';
+  return '↑ Live signal';
+}
+function _liveToInsights(items){
+  // Round-robin across signal types so users see a spread (social/web/news/
+  // reviews/trend) instead of eight of whichever source ranked highest.
+  const groups={};
+  items.forEach(it=>{ const k=it.signalType||'web'; (groups[k]||(groups[k]=[])).push(it); });
+  const order=['social','web','news','reviews','trend'];
+  const keys=order.filter(k=>groups[k]).concat(Object.keys(groups).filter(k=>!order.includes(k)));
+  const picked=[]; let progressed=true;
+  while(picked.length<8 && progressed){
+    progressed=false;
+    for(const k of keys){
+      if(groups[k] && groups[k].length){ picked.push(groups[k].shift()); progressed=true; if(picked.length>=8) break; }
+    }
+  }
+  return picked.map((it,i)=>({
+    category: _LIVE_TYPE_CAT[it.signalType] || 'consumer',
+    title:    it.title || ((it.signalType||'live')+' signal'),
+    excerpt:  it.snippet || '',
+    stat:     _liveStat(it),
+    confidence: i<3?'High':(i<6?'Medium':'Low'),
+    source:   it.source || it.signalType || 'Live',
+    sourceUrl: it.url || null,
+  }));
+}
+function _liveSources(connectors, q){
+  const u = {
+    reddit:'https://www.reddit.com/search/?q='+encodeURIComponent(q),
+    youtube:'https://www.youtube.com/results?search_query='+encodeURIComponent(q),
+    brave:'https://search.brave.com/search?q='+encodeURIComponent(q),
+    gnews:'https://news.google.com/search?q='+encodeURIComponent(q),
+    bluesky:'https://bsky.app/search?q='+encodeURIComponent(q),
+    appstore:'https://www.apple.com/app-store/',
+    wikitrends:'https://en.wikipedia.org/wiki/Special:Search?search='+encodeURIComponent(q),
+  };
+  return (connectors||[]).filter(c=>c.status==='ok'&&c.count>0).map((c,i)=>({
+    num:i+1,
+    label:_LIVE_LABELS[c.source]||c.source,
+    display:_LIVE_LABELS[c.source]||c.source,
+    desc:c.count+' live results · real-time',
+    url:u[c.source]||'#',
+  }));
+}
+function _liveBrief(q, items, connectors){
+  const byType = items.reduce((a,it)=>{a[it.signalType]=(a[it.signalType]||0)+1;return a;},{});
+  const ok = (connectors||[]).filter(c=>c.status==='ok'&&c.count>0).map(c=>_LIVE_LABELS[c.source]||c.source);
+  const parts=[];
+  if(byType.social) parts.push(byType.social+' social posts');
+  if(byType.web)    parts.push(byType.web+' web results');
+  if(byType.trend)  parts.push('a demand-trend reading');
+  if(byType.news)   parts.push(byType.news+' news items');
+  return `Real-time scan of "${q}" across ${ok.length} live source${ok.length===1?'':'s'} (${ok.join(', ')||'none'}) surfaced ${parts.join(', ')||'limited signal'}. These are unranked raw signals straight from the open social and web layer — use them to see where the conversation is actually happening right now, then run Deep Search to quantify and cite the strongest threads.`;
+}
+
+async function runLiveSearch(q){
+  showLoader(q,'live',[
+    'Connecting to live source pipeline',
+    'Reddit, YouTube & Bluesky (social signal)',
+    'Searching the open web (Brave) & Google News',
+    'Reading App Store reviews & demand trend',
+    'Normalizing & ranking across signal types',
+    'Assembling real-time intelligence',
+  ]);
+  try {
+    const data = await api('insights', { query:q });
+    const items = (data && data.items) || [];
+    if(!items.length){
+      hideLoader();
+      showToast('No live signals returned — showing open-source data');
+      runBasicSearch(q);
+      return;
+    }
+    const insights = _liveToInsights(items);
+    const sources  = _liveSources(data.connectors, q);
+    const ideas    = buildIdeas(q, insights, 'live');
+    const brief    = _liveBrief(q, items, data.connectors);
+    hideLoader();
+    renderResults(q, { insights, ideas, sources, brief, mode:'live' }, 'live');
+  } catch(e){
+    hideLoader();
+    showToast('Live pipeline unavailable — showing open-source data');
+    runBasicSearch(q);
+  }
 }
 
 // ════════════════════════════════════════════
@@ -1817,7 +1948,7 @@ function showLoader(q,mode,steps){
   rings.innerHTML=mode==='deep'
     ?'<div class="loader-ring d1"></div><div class="loader-ring d2"></div><div class="loader-ring d3"></div>'
     :'<div class="loader-ring r1"></div><div class="loader-ring r2"></div><div class="loader-ring r3"></div>';
-  document.getElementById('loader-label').textContent=mode==='deep'?'DEEP SEARCHING — PERPLEXITY SONAR PRO':'EXCAVATING OPEN DATA SOURCES';
+  document.getElementById('loader-label').textContent=mode==='deep'?'DEEP SEARCHING — PERPLEXITY SONAR PRO':(mode==='live'?'PULLING LIVE SIGNALS — REAL-TIME PIPELINE':'EXCAVATING OPEN DATA SOURCES');
   const qEl=document.getElementById('loader-query');
   qEl.textContent='"'+q+'"';
   qEl.className='loader-query '+(mode==='deep'?'deep':'basic');
@@ -2341,12 +2472,14 @@ function renderResults(q, data, mode){
 
   document.getElementById('live-results').style.display='block';
   document.getElementById('results-query').textContent=q;
-  document.getElementById('results-meta').textContent=(mode==='deep'?'PERPLEXITY SONAR PRO — REAL-TIME WEB · ':'OPEN-SOURCE DATA — 7 VERIFIED APIS · ')+new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}).toUpperCase();
+  document.getElementById('results-meta').textContent=(mode==='deep'?'PERPLEXITY SONAR PRO — REAL-TIME WEB · ':(mode==='live'?'LIVE SOURCES — REAL-TIME SOCIAL, WEB & TREND · ':'OPEN-SOURCE DATA — 7 VERIFIED APIS · '))+new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}).toUpperCase();
 
   const pill=document.getElementById('results-mode-pill');
   pill.innerHTML=mode==='deep'
     ?'<div class="mode-pill deep">DEEP SEARCH — PERPLEXITY SONAR PRO</div>'
-    :'<div class="mode-pill basic">BASIC SEARCH — OPEN-SOURCE INTELLIGENCE</div>';
+    :(mode==='live'
+      ?'<div class="mode-pill basic">LIVE SOURCES — REAL-TIME PIPELINE</div>'
+      :'<div class="mode-pill basic">BASIC SEARCH — OPEN-SOURCE INTELLIGENCE</div>');
 
   document.getElementById('res-sources').textContent=lastSources.length||'—';
   document.getElementById('res-insights').textContent=(data.insights||[]).length;
@@ -2359,7 +2492,7 @@ function renderResults(q, data, mode){
 
   // Deep CTA for basic mode
   const cta=document.getElementById('deep-cta-container');
-  if(mode==='basic'){
+  if(mode!=='deep'){
     cta.innerHTML=`<div class="deep-cta-strip"><div class="deep-cta-text"><strong>Upgrade to Deep Search</strong> — pull real-time, quantified intelligence with real, clickable citations from across the live web. Powered by Perplexity Sonar Pro.</div><button class="deep-cta-btn" onclick="navDeepToggle();runSearch()">ACTIVATE DEEP SEARCH →</button></div>`;
   } else { cta.innerHTML=''; }
 
