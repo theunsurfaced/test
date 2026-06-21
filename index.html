@@ -1161,7 +1161,8 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
 .uai-door:hover,.uai-door:focus-visible{background:#0b0b11;outline:none;}
 .uai-triptych:hover .uai-door:not(:hover){opacity:.4;}
 .uai-role{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);}
-.uai-verb{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,4.4vw,60px);line-height:.95;letter-spacing:-.01em;margin-top:auto;transition:color .35s ease;}
+.uai-verb{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(30px,4vw,50px);line-height:.95;letter-spacing:-.01em;margin-top:auto;white-space:nowrap;transition:color .35s ease;}
+.door-excavate .uai-verb{letter-spacing:-.02em;}
 .uai-def{font-size:14px;color:var(--text2);line-height:1.45;max-width:32ch;}
 .uai-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
 .uai-status{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border:1px solid var(--border2);color:var(--text3);}
@@ -1202,7 +1203,7 @@ h1.hero-title em{font-style:italic;color:var(--accent);}
 .uai-door2 p{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:18px;}
 .uai-door2-btn{background:none;border:1px solid var(--border2);color:var(--text);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:10px 16px;cursor:pointer;transition:all .25s;}
 .uai-door2-btn:hover,.uai-door2-btn:focus-visible{background:var(--accent4);color:#000;border-color:var(--accent4);outline:none;}
-@media(max-width:760px){.uai-triptych{flex-direction:column;}.uai-door{min-height:auto;}.uai-door .uai-verb{margin-top:8px;}.uai-triptych:hover .uai-door:not(:hover){opacity:1;}}
+@media(max-width:760px){.uai-triptych{flex-direction:column;}.uai-door{min-height:auto;}.uai-door .uai-verb{margin-top:8px;font-size:clamp(32px,8vw,50px);}.door-excavate .uai-verb{font-size:clamp(32px,8vw,50px);}.uai-triptych:hover .uai-door:not(:hover){opacity:1;}}
 @media(prefers-reduced-motion:reduce){.uai-hub.show .uai-door,.uai-hub.show .uai-h1{animation:none;}.uai-door,.uai-go,.uai-verb{transition:none;}}
 </style>
 
